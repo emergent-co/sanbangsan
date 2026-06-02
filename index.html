@@ -181,7 +181,6 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 
 <!-- 품목 소개 (보기용) -->
 <div class="showcase">
-  <div class="sc-title">🍊 품목 소개</div>
   <div class="prod-card">
     <img class="fruit-img" src="img/karahyang.jpg" onerror="this.style.opacity=0.0" alt="카라향 정품 소과">
     <div class="prod-body">
@@ -200,7 +199,6 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
   </div>
 </div>
 
-<div class="divider"></div>
 
 <div class="wizard">
   <div class="steps">
@@ -263,7 +261,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
       <div style="font-size:11px;color:#9a7a50;margin-top:10px;line-height:1.6;">입금 확인 후 순차 발송됩니다.<br>입금자명은 주문자명과 동일하게 부탁드립니다.</div>
     </div>
 
-    <div class="turnstile-wrap"><div class="cf-turnstile" id="turnstile" data-sitekey="" data-callback="onTurnstile" data-theme="light"></div></div>
+    <div class="turnstile-wrap"><div id="turnstile"></div></div>
 
     <div class="nav-btns">
       <button class="btn-prev" onclick="goStep(1)">← 이전</button>
@@ -414,7 +412,7 @@ function goStep(n){
   document.getElementById("step-2").classList.toggle("active",n===2);
   document.getElementById("dot-1").classList.toggle("active",n===1);
   document.getElementById("dot-2").classList.toggle("active",n===2);
-  if(n===2) renderSummary();
+  if(n===2){ renderSummary(); renderTurnstile(); }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -440,6 +438,14 @@ function updateSubmit(){
 }
 function openModal(id){ document.getElementById(id).classList.add("show"); }
 function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+var turnstileRendered=false;
+function renderTurnstile(){
+  if(turnstileRendered || !CONFIG.TURNSTILE_SITEKEY) return;
+  if(window.turnstile && typeof window.turnstile.render==="function"){
+    window.turnstile.render("#turnstile",{sitekey:CONFIG.TURNSTILE_SITEKEY,callback:onTurnstile,theme:"light"});
+    turnstileRendered=true;
+  } else { setTimeout(renderTurnstile,400); }
+}
 function onTurnstile(t){ turnstileToken=t; }
 
 function submitOrder(){
@@ -482,8 +488,7 @@ function shareKakao(){
 }
 
 (function init(){
-  if(CONFIG.TURNSTILE_SITEKEY){ document.getElementById("turnstile").setAttribute("data-sitekey",CONFIG.TURNSTILE_SITEKEY); }
-  else { document.querySelector(".turnstile-wrap").style.display="none"; }
+  if(!CONFIG.TURNSTILE_SITEKEY){ document.querySelector(".turnstile-wrap").style.display="none"; }
   var insta=document.getElementById("btn-insta");
   if(CONFIG.INSTAGRAM_URL){ insta.href=CONFIG.INSTAGRAM_URL; } else { insta.classList.add("disabled"); }
   if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("disabled");k.innerHTML="💬 카카오 채널"; }

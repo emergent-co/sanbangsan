@@ -6,7 +6,7 @@
 <title>산방산 농수산 — 주문 관리</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5efe6;color:#2d1a00;max-width:1180px;margin:0 auto;padding-bottom:88px;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5efe6;color:#2d1a00;max-width:1360px;margin:0 auto;padding-bottom:88px;}
 .top{background:#2d1a00;color:#fff;padding:14px 18px;position:sticky;top:0;z-index:50;}
 .top h1{font-size:17px;font-weight:700;}
 .top .sub{font-size:11px;color:#c8a878;margin-top:2px;}
@@ -29,18 +29,20 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5e
 .pt-card span,.pt-card{white-space:nowrap;}
 .pt-card .c-total,.pt-card strong{color:#e8581a;}
 .pt-card i{color:#9a7a50;font-style:normal;font-size:11px;}
-.tablewrap{overflow-x:auto;padding:0 8px;}
-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:10px;overflow:hidden;min-width:980px;}
-thead th{background:#fbf4ea;color:#7a5a35;font-weight:700;font-size:12px;text-align:left;padding:9px 8px;border-bottom:2px solid #e8ddc8;white-space:nowrap;position:sticky;top:0;}
-tbody td{padding:9px 8px;border-bottom:1px solid #f0e8da;color:#3f2c14;vertical-align:top;}
+.tablewrap{overflow-x:auto;padding:0 2px;}
+table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;min-width:960px;}
+thead th{background:#fbf4ea;color:#7a5a35;font-weight:700;font-size:11px;text-align:left;padding:6px 5px;border-bottom:2px solid #e8ddc8;white-space:nowrap;position:sticky;top:0;}
+tbody td{padding:6px 5px;border-bottom:1px solid #f0e8da;color:#3f2c14;vertical-align:top;}
 tbody tr:hover{background:#fffaf2;}
 .c-id{font-weight:800;color:#e8581a;white-space:nowrap;}
 .c-time{color:#9a7a50;white-space:nowrap;font-size:12px;}
 .c-total{font-weight:800;color:#e8581a;white-space:nowrap;text-align:right;}
-.c-addr{max-width:240px;}
-.c-items{max-width:230px;color:#5a3e20;font-size:12px;line-height:1.5;}
-.chk{width:18px;height:18px;accent-color:#e8581a;}
-.mini{background:#2d1a00;color:#fff;border:none;border-radius:5px;padding:2px 7px;font-size:11px;cursor:pointer;margin-left:4px;}
+.c-addr{max-width:200px;}
+.c-items{max-width:160px;color:#5a3e20;font-size:11px;line-height:1.45;}
+.chk{width:16px;height:16px;accent-color:#e8581a;}
+.mini{background:#2d1a00;color:#fff;border:none;border-radius:4px;padding:1px 5px;font-size:10px;cursor:pointer;margin-left:3px;}
+.del{background:#fdecea;color:#c0392b;border:1px solid #f5c6c2;border-radius:4px;padding:0 5px;font-size:11px;line-height:1.5;cursor:pointer;margin-left:5px;}
+.del:hover{background:#f8d7d4;}
 .status-pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
 .s-신규{background:#fff3e0;color:#a05c10;}
 .s-입금확인{background:#e3f2fd;color:#1565c0;}
@@ -85,10 +87,10 @@ tbody tr:hover{background:#fffaf2;}
 </div>
 
 <div class="tabs" id="tabs">
-  <div class="tab active" data-st="신규" onclick="setTab(this)">신규<span class="cnt" id="c-신규"></span></div>
+  <div class="tab" data-st="신규" onclick="setTab(this)">신규<span class="cnt" id="c-신규"></span></div>
   <div class="tab" data-st="입금확인" onclick="setTab(this)">입금확인<span class="cnt" id="c-입금확인"></span></div>
   <div class="tab" data-st="발송완료" onclick="setTab(this)">발송완료<span class="cnt" id="c-발송완료"></span></div>
-  <div class="tab" data-st="전체" onclick="setTab(this)">전체<span class="cnt" id="c-전체"></span></div>
+  <div class="tab active" data-st="전체" onclick="setTab(this)">전체<span class="cnt" id="c-전체"></span></div>
 </div>
 
 <div class="controls">
@@ -167,8 +169,8 @@ function hideGate(){ document.getElementById("gate").classList.remove("show"); }
 function submitGate(){ var v=document.getElementById("gate-input").value; if(!v) return; setKey(v); document.getElementById("gate-input").value=""; hideGate(); loadOrders(); }
 function startAdmin(){ if(!ADMINKEY){ showGate(""); return; } loadOrders(); }
 
-var allOrders = [];   // 현재 상태탭의 전체 주문(검색 전)
-var curTab = "신규";
+var allOrders = [];   // 전체 주문(모든 상태) — 탭/검색은 클라이언트에서 처리
+var curTab = "전체";
 var search = "";
 var pageSize = 20;
 var page = 1;
@@ -195,31 +197,31 @@ function setTab(el){
   el.classList.add("active");
   curTab = el.getAttribute("data-st");
   selected.clear(); page=1;
-  loadOrders();
+  renderTable();
 }
 function onSearch(){ search = document.getElementById("search").value.trim().toLowerCase(); page=1; renderTable(); }
 function onPageSize(){ pageSize = parseInt(document.getElementById("pagesize").value,10)||20; page=1; renderTable(); }
 
 function loadOrders(){
-  var q = curTab === "전체" ? "?limit=500" : ("?status=" + encodeURIComponent(curTab) + "&limit=500");
   document.getElementById("tablewrap").innerHTML = '<div class="loading">불러오는 중…</div>';
   document.getElementById("pager").innerHTML = "";
-  adminFetch(CONFIG.API_BASE + "/orders" + q)
+  adminFetch(CONFIG.API_BASE + "/orders?limit=500")
     .then(function(r){ if(r.status===401){ clearKey(); showGate("비밀번호가 올바르지 않습니다. 다시 입력해 주세요."); throw new Error("__gate__"); } return r.json(); })
-    .then(function(res){ if(!res.ok){ throw new Error(res.error || "조회 실패"); } allOrders = res.orders || []; renderTable(); updateCounts(); })
+    .then(function(res){ if(!res.ok){ throw new Error(res.error || "조회 실패"); } allOrders = res.orders || []; updateCounts(); renderTable(); })
     .catch(function(e){ if(e.message==="__gate__") return; document.getElementById("tablewrap").innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; });
 }
 
+/* 탭 뱃지 카운트 — 묶음 단위, 검색 무시(전체 기준) */
 function updateCounts(){
-  adminFetch(CONFIG.API_BASE + "/orders?limit=500")
-    .then(function(r){return r.ok?r.json():{ok:false};})
-    .then(function(res){ if(!res.ok) return;
-      window.__fullOrders = res.orders || [];
-      var c={ "신규":0,"입금확인":0,"발송완료":0,"전체":res.orders.length };
-      res.orders.forEach(function(o){ if(c[o.status]!==undefined) c[o.status]++; });
-      ["신규","입금확인","발송완료","전체"].forEach(function(k){ document.getElementById("c-"+k).textContent = "("+c[k]+")"; });
-      renderPeriodTotals();
+  var units = buildUnits(allOrders);
+  var c={ "신규":0,"입금확인":0,"발송완료":0,"전체":units.length };
+  units.forEach(function(u){
+    ["신규","입금확인","발송완료"].forEach(function(st){
+      if(u.orders.some(function(o){return o.status===st;})) c[st]++;
     });
+  });
+  ["신규","입금확인","발송완료","전체"].forEach(function(k){ var el=document.getElementById("c-"+k); if(el) el.textContent = "("+c[k]+")"; });
+  renderPeriodTotals();
 }
 
 function filteredOrders(){
@@ -258,7 +260,8 @@ function singleRow(o, childBid){
   var addrFull = (o.zipcode?"("+o.zipcode+") ":"")+(o.address||"")+" "+(o.address_detail||"");
   var items = itemsSummary(o);
   var trAttr = childBid ? (' data-br="'+childBid+'" class="batch-child"'+(openBatches.has(childBid)?"":' style="display:none"')) : "";
-  var idCell = childBid ? '<td class="c-id">↳ #'+o.id+'</td>' : '<td class="c-id">#'+o.id+'</td>';
+  var delBtn = '<button class="del" onclick="deleteOrder('+o.id+')" title="주문 삭제">✕</button>';
+  var idCell = childBid ? '<td class="c-id">↳ #'+o.id+delBtn+'</td>' : '<td class="c-id">#'+o.id+delBtn+'</td>';
   var chkHandler = childBid ? "toggleSelSync" : "toggleSel";
   return '<tr'+trAttr+'>'
     +'<td><input class="chk" type="checkbox" '+(selected.has(o.id)?"checked":"")+' onchange="'+chkHandler+'('+o.id+',this)"></td>'
@@ -310,7 +313,7 @@ function batchRows(u){
   var mkt = anyMkt ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
   var parent = '<tr class="batch-parent">'
     +'<td><input class="chk" type="checkbox" id="bchk-'+bid+'" '+(allSel?"checked":"")+' onchange="toggleBatchSel(\''+bid+'\',this)"></td>'
-    +'<td class="c-id"><button class="batch-toggle" onclick="toggleBatch(\''+bid+'\')">'+(open?"▼":"▶")+'</button>#'+orders[0].id+' <span class="batch-badge">묶음 '+orders.length+'곳</span></td>'
+    +'<td class="c-id"><button class="batch-toggle" onclick="toggleBatch(\''+bid+'\')">'+(open?"▼":"▶")+'</button>#'+orders[0].id+' <span class="batch-badge">묶음 '+orders.length+'곳</span><button class="del" onclick="deleteBatch(\''+bid+'\')" title="묶음 전체 삭제">✕</button></td>'
     +'<td class="c-time">'+esc(t)+'</td>'
     +'<td>'+esc(dnames.join(", "))+'</td>'
     +'<td>'+esc(phone)+'</td>'
@@ -341,6 +344,10 @@ function renderTable(){
   window.__batchIds = {};
   var list = filteredOrders();
   var units = buildUnits(list);
+  // 탭 필터(묶음 단위): 하위 주문 중 하나라도 해당 상태면 그 묶음 전체를 표시
+  if(curTab !== "전체"){
+    units = units.filter(function(u){ return u.orders.some(function(o){return o.status===curTab;}); });
+  }
   var total = units.length;
   var pages = Math.max(1, Math.ceil(total / pageSize));
   if(page > pages) page = pages;
@@ -369,7 +376,7 @@ function renderTable(){
     cb.indeterminate = some && !all;
   });
 
-  var orderCnt = list.length;
+  var orderCnt = units.reduce(function(a,u){return a+u.orders.length;},0);
   document.getElementById("result-info").textContent = total+"건(묶음 포함, 실주문 "+orderCnt+"건) 중 "+(start+1)+"–"+Math.min(start+pageSize,total)+" 표시" + (search?" (검색)":"");
   renderPager(pages);
   updateSelInfo();
@@ -379,7 +386,7 @@ function renderTable(){
 function renderPeriodTotals(){
   var el = document.getElementById("period-totals");
   if(!el) return;
-  var src = (window.__fullOrders && window.__fullOrders.length) ? window.__fullOrders : allOrders;
+  var src = allOrders;
   var now = new Date();
   var pad=function(n){return (n<10?"0":"")+n;};
   var todayStr = now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate());
@@ -436,6 +443,24 @@ function setShip(id, v){
   setStatus(id, ns);
 }
 
+/* 주문 취소(삭제) */
+function deleteOrder(id){
+  if(!confirm("주문 #"+id+" 을(를) 삭제할까요? 되돌릴 수 없습니다.")) return;
+  adminFetch(CONFIG.API_BASE + "/orders/" + id, { method:"DELETE" })
+    .then(function(r){return r.json();}).then(function(res){
+      if(res.ok){ toast("#"+id+" 삭제됨"); loadOrders(); } else { toast(res.error || "삭제 실패"); }
+    }).catch(function(){ toast("네트워크 오류"); });
+}
+function deleteBatch(bid){
+  var ids = (window.__batchIds||{})[bid] || [];
+  if(ids.length===0) return;
+  if(!confirm("이 묶음 "+ids.length+"건을 모두 삭제할까요? 되돌릴 수 없습니다.")) return;
+  Promise.all(ids.map(function(id){
+    return adminFetch(CONFIG.API_BASE + "/orders/" + id, { method:"DELETE" }).then(function(r){return r.json();});
+  })).then(function(){ toast("묶음 "+ids.length+"건 삭제됨"); loadOrders(); })
+     .catch(function(){ toast("삭제 중 오류"); loadOrders(); });
+}
+
 /* 상태 변경 */
 function setStatus(id, status){
   adminFetch(CONFIG.API_BASE + "/orders/" + id, { method:"PATCH", headers:{"content-type":"application/json"}, body:JSON.stringify({status:status}) })
@@ -467,14 +492,10 @@ function copySelected(){ var text = buildSmsText(); if(!text){ toast("선택된 
 
 /* 마케팅 동의자 추출 (전체 기준) */
 function extractMarketing(){
-  adminFetch(CONFIG.API_BASE + "/orders?limit=500")
-    .then(function(r){return r.json();}).then(function(res){
-      if(!res.ok){ toast("조회 실패"); return; }
-      var seen={}, lines=[];
-      res.orders.forEach(function(o){ if(o.agree_marketing==1 && !seen[o.phone]){ seen[o.phone]=1; lines.push(o.name+" "+o.phone); } });
-      if(lines.length===0){ toast("마케팅 동의자가 없습니다."); return; }
-      openTextModal("마케팅 수신 동의자 ("+lines.length+"명)", lines.join("\n"));
-    });
+  var seen={}, lines=[];
+  allOrders.forEach(function(o){ if(o.agree_marketing==1 && !seen[o.phone]){ seen[o.phone]=1; lines.push(o.name+" "+o.phone); } });
+  if(lines.length===0){ toast("마케팅 동의자가 없습니다."); return; }
+  openTextModal("마케팅 수신 동의자 ("+lines.length+"명)", lines.join("\n"));
 }
 
 function openTextModal(title, text){ document.getElementById("m-text-title").textContent=title; document.getElementById("m-text-area").value=text; document.getElementById("m-text").classList.add("show"); }

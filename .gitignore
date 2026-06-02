@@ -1,0 +1,8 @@
+# 의존성/빌드
+node_modules/
+# wrangler 로컬 상태 (로컬 D1 등)
+.wrangler/
+# OS/에디터
+.DS_Store
+Thumbs.db
+*.log

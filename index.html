@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>'부(父)업하는 아빠'가 소개하는 산방산 농수산 고당도 제주감귤</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #fff; max-width: 480px; margin: 0 auto; }
+
+.notice-bar { background: #fff3cd; border-bottom: 1px solid #ffe082; padding: 8px 16px; font-size: 12px; color: #7a5a10; text-align: center; }
+.hero { background: linear-gradient(160deg, #fff8f0, #fff3e0); padding: 28px 20px 20px; text-align: center; border-bottom: 1px solid #f0d9b5; }
+.brand-badge { display: inline-block; background: #e8581a; color: white; font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; letter-spacing: 0.5px; }
+.hero h1 { font-size: 22px; font-weight: 700; color: #2d1a00; line-height: 1.4; margin-bottom: 8px; }
+.hero p { font-size: 14px; color: #7a5a35; line-height: 1.6; }
+.tag-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+.tag { background: #fff3e0; border: 1px solid #e8b87a; color: #a05c10; font-size: 12px; padding: 4px 12px; border-radius: 20px; }
+
+.section { padding: 20px 16px; }
+.section-title { font-size: 16px; font-weight: 700; color: #2d1a00; margin-bottom: 14px; }
+
+.fruit-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.fruit-tab { flex: 1; padding: 9px 4px; border: 1px solid #e0c9a0; border-radius: 8px; background: white; font-size: 13px; color: #7a5a35; cursor: pointer; text-align: center; font-weight: 600; }
+.fruit-tab.active { background: #e8581a; color: white; border-color: #e8581a; }
+
+.fruit-card { background: white; border: 1px solid #f0d9b5; border-radius: 12px; overflow: hidden; display: none; }
+.fruit-card.active { display: block; }
+.fruit-img { width: 100%; height: 220px; object-fit: cover; display: block; }
+.fruit-info { padding: 14px 16px; }
+.fruit-name { font-size: 18px; font-weight: 700; color: #2d1a00; margin-bottom: 4px; }
+.fruit-desc { font-size: 13px; color: #7a5a35; line-height: 1.6; margin-bottom: 14px; }
+.price-list { border-top: 1px solid #f0d9b5; padding-top: 10px; }
+.price-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #faf0e0; }
+.price-row:last-child { border-bottom: none; }
+.price-label { font-size: 14px; color: #5a3e20; }
+.price-amount { font-size: 15px; font-weight: 700; color: #e8581a; }
+.free-ship { display: inline-flex; align-items: center; gap: 4px; background: #e8f5e9; color: #2e7d32; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 10px; font-weight: 600; }
+
+.divider { height: 8px; background: #f5efe6; }
+
+.order-form { background: #fffbf6; border: 1px solid #f0d9b5; border-radius: 12px; padding: 18px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 13px; color: #5a3e20; font-weight: 600; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 11px 13px; border: 1px solid #e0c9a0; border-radius: 8px; font-size: 14px; color: #2d1a00; background: white; outline: none; -webkit-appearance: none; appearance: none; }
+.form-input:focus { border-color: #e8581a; box-shadow: 0 0 0 2px rgba(232,88,26,0.12); }
+.submit-btn { width: 100%; padding: 15px; background: #e8581a; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+
+.bank-info { background: #fff8f0; border: 1px solid #f0d9b5; border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+.bank-title { font-size: 12px; color: #7a5a35; font-weight: 600; margin-bottom: 8px; }
+.bank-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+.bank-key { color: #7a5a35; }
+.bank-val { color: #2d1a00; font-weight: 600; }
+
+.success-msg { display: none; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 10px; padding: 18px; text-align: center; color: #2e7d32; font-size: 14px; line-height: 1.9; margin-top: 14px; }
+
+.footer { background: #2d1a00; color: #c8a878; text-align: center; padding: 20px; font-size: 12px; line-height: 2; }
+.tel-btn { display: inline-block; margin-top: 10px; background: #e8581a; color: white; border-radius: 8px; padding: 11px 28px; font-size: 15px; font-weight: 700; text-decoration: none; }
+
+/* ===== 공통 ===== */
+.deadline-bar{background:#e8581a;color:#fff;text-align:center;font-size:14px;font-weight:700;padding:10px;}
+.hero h1{font-size:20px;line-height:1.45;}
+.hero h1 .small{font-size:14px;font-weight:600;color:#a05c10;display:block;margin-bottom:4px;}
+.showcase{padding:18px 16px 6px;}
+.sc-title{font-size:16px;font-weight:800;color:#2d1a00;margin-bottom:12px;}
+.prod-card{background:#fff;border:1.5px solid #f0d9b5;border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.prod-card .fruit-img{height:235px;width:100%;object-fit:cover;object-position:center;background:#fff6ec;}
+.prod-card img[alt="카라향 정품 소과"]{height:300px;object-position:center 38%;transform:scale(1.22);transform-origin:center 42%;}
+.prod-card img[alt="못난이 카라향"]{height:300px;object-position:center 70%;}
+.prod-body{padding:13px 15px;}
+.prod-name{font-size:17px;font-weight:800;color:#2d1a00;margin-bottom:4px;}
+.prod-desc{font-size:13px;color:#7a5a35;line-height:1.6;margin-bottom:10px;}
+.mini-price{display:flex;gap:6px;}
+.mini-price span{flex:1;text-align:center;font-size:12px;font-weight:700;color:#a05c10;background:#fff6ec;border-radius:8px;padding:6px 0;}
+.divider{height:8px;background:#f5efe6;}
+/* ===== 위저드 ===== */
+.wizard{padding:18px 16px;}
+.steps{display:flex;justify-content:center;gap:8px;margin-bottom:18px;}
+.step-dot{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#a08a66;}
+.step-dot .num{width:26px;height:26px;border-radius:50%;background:#eaddc8;color:#a08a66;display:flex;align-items:center;justify-content:center;}
+.step-dot.active .num{background:#e8581a;color:#fff;}
+.step-dot.active{color:#e8581a;}
+.step{display:none;}
+.step.active{display:block;animation:fade .25s;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.step-q{font-size:19px;font-weight:800;color:#2d1a00;margin-bottom:4px;}
+.step-help{font-size:13px;color:#9a7a50;margin-bottom:16px;line-height:1.5;}
+/* 배송지 카드 */
+.dest-card{background:#fffbf6;border:1.5px solid #f0d9b5;border-radius:14px;padding:16px;margin-bottom:14px;}
+.dest-head{display:flex;align-items:center;margin-bottom:12px;}
+.dest-head .t{font-size:16px;font-weight:800;color:#e8581a;}
+.dest-head .del{margin-left:auto;background:none;border:none;color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;}
+.big-input{width:100%;padding:14px;border:1.5px solid #e0c9a0;border-radius:10px;font-size:16px;color:#2d1a00;background:#fff;outline:none;margin-bottom:10px;-webkit-appearance:none;appearance:none;}
+.big-input:focus{border-color:#e8581a;}
+.big-input[readonly]{background:#f7f0e6;}
+.input-label{font-size:13px;font-weight:700;color:#5a3e20;margin:2px 0 6px;display:block;}
+.req{color:#c0392b;}
+.addr-row{display:flex;gap:8px;}
+.btn-search{flex-shrink:0;padding:0 16px;background:#fff3e0;color:#a05c10;border:1.5px solid #e8b87a;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+.dp-block{margin-top:6px;}
+.dp-name{font-size:13px;font-weight:800;color:#2d1a00;margin:8px 0 6px;}
+.w-btns{display:flex;gap:8px;margin-bottom:6px;}
+.w-btn{position:relative;flex:1;border:1.5px solid #eadfce;background:#fff;border-radius:12px;padding:10px 4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .08s ease,background .15s,border-color .15s;-webkit-tap-highlight-color:transparent;}
+.w-btn:active{transform:scale(.93);background:#fff6ec;}
+.w-btn .w-kg{font-size:15px;font-weight:800;color:#2d1a00;}
+.w-btn .w-price{font-size:12px;font-weight:700;color:#7a5a35;}
+.w-btn .w-add{margin-top:4px;width:100%;font-size:11px;font-weight:800;color:#fff;background:#e8581a;border-radius:14px;padding:3px 0;}
+@keyframes wpop{0%{transform:scale(1);}45%{transform:scale(1.12);}100%{transform:scale(1);}}
+.w-btn.added{animation:wpop .25s ease;}
+.dest-cart{margin-top:10px;border-top:1px dashed #e0c9a0;padding-top:10px;}
+.dest-cart-empty{font-size:13px;color:#b09870;text-align:center;padding:6px 0;}
+.dci{display:flex;align-items:center;font-size:14px;color:#5a3e20;padding:6px 0;}
+.dci .n{flex:1;}
+.dci .q{display:flex;align-items:center;gap:4px;margin:0 8px;}
+.dci .q button{width:28px;height:28px;border:1px solid #e0c9a0;background:#fff;border-radius:6px;font-size:16px;font-weight:700;color:#e8581a;cursor:pointer;}
+.dci .a{font-weight:800;color:#2d1a00;min-width:72px;text-align:right;}
+.dest-sub{display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:700;color:#5a3e20;}
+.dest-sub b{color:#e8581a;}
+.add-dest{width:100%;padding:14px;background:#fff;border:2px dashed #e8b87a;border-radius:12px;color:#a05c10;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;}
+.grand{display:flex;justify-content:space-between;align-items:center;background:#fff8f0;border:1px solid #f0d9b5;border-radius:12px;padding:14px 16px;margin-bottom:8px;}
+.grand .gl{font-size:15px;font-weight:700;color:#5a3e20;}
+.grand .ga{font-size:22px;font-weight:800;color:#e8581a;}
+.ship0{font-size:13px;color:#2e7d32;font-weight:700;text-align:right;margin-bottom:14px;}
+.nav-btns{display:flex;gap:10px;margin-top:8px;}
+.nav-btns button{flex:1;padding:16px;border-radius:12px;font-size:17px;font-weight:800;cursor:pointer;border:none;}
+.btn-prev{background:#fff;border:2px solid #e0c9a0 !important;color:#7a5a35;}
+.btn-next{background:#e8581a;color:#fff;}
+.btn-next:disabled{background:#d6c3aa;cursor:not-allowed;}
+.summary{background:#fffbf6;border:1px solid #f0d9b5;border-radius:12px;padding:14px;font-size:14px;color:#5a3e20;line-height:1.8;margin-bottom:14px;}
+.summary .sd{padding:8px 0;border-bottom:1px solid #faf0e0;}
+.summary .sd:last-child{border-bottom:none;}
+.summary b{color:#2d1a00;}
+.agree-box{background:#fff8f0;border:1px solid #f0d9b5;border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.agree-all{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;color:#2d1a00;padding-bottom:10px;border-bottom:1px solid #f0d9b5;margin-bottom:10px;cursor:pointer;}
+.agree-item{display:flex;align-items:center;gap:10px;font-size:14px;color:#5a3e20;margin-bottom:10px;cursor:pointer;line-height:1.5;}
+.agree-item:last-child{margin-bottom:0;}
+.agree-item input,.agree-all input{width:22px;height:22px;accent-color:#e8581a;flex-shrink:0;}
+.agree-tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px;margin-right:4px;}
+.agree-req{background:#ffe0e0;color:#c0392b;}
+.agree-opt{background:#e3f2fd;color:#1565c0;}
+.req-note{color:#c0392b;font-weight:700;}
+.btn-detail{background:none;border:none;color:#a05c10;font-size:12px;text-decoration:underline;cursor:pointer;padding:0;margin-left:4px;}
+.pay-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.pay-tab{flex:1;padding:14px 6px;border-radius:10px;border:2px solid #e0c9a0;background:#fff;font-size:14px;font-weight:800;text-align:center;}
+.pay-tab.active{background:#e8581a;color:#fff;border-color:#e8581a;}
+.pay-tab.disabled{background:#f0f0f0;color:#aaa;border-color:#ddd;cursor:not-allowed;}
+.pay-badge{display:block;font-size:10px;font-weight:600;margin-top:2px;}
+.bank-acct-line{display:flex;align-items:center;gap:8px;}
+.copy-mini{background:#2d1a00;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+.turnstile-wrap{margin:14px 0;display:flex;justify-content:center;}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#2d1a00;color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;max-width:90%;text-align:center;}
+.toast.show{opacity:.96;}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;}
+.action-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1px solid #e0c9a0;background:#fff;color:#5a3e20;cursor:pointer;}
+.action-btn.kakao{background:#fee500;color:#3c1e1e;border-color:#fee500;}
+.action-btn.insta{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;}
+.action-btn.disabled{background:#f0f0f0;color:#aaa;border-color:#ddd;pointer-events:none;}
+.footer{font-size:11px;line-height:1.9;}
+.footer a.policy{color:#e8b87a;text-decoration:underline;font-size:12px;}
+.biz{color:#9a7a50;font-size:10px;margin-top:10px;line-height:1.7;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.show{display:flex;}
+.modal-box{background:#fff;border-radius:12px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;padding:22px;}
+.modal-box h3{font-size:16px;color:#2d1a00;margin-bottom:12px;}
+.modal-box p{font-size:13px;color:#5a3e20;line-height:1.7;}
+.modal-box h4{font-size:13px;color:#a05c10;margin:12px 0 4px;}
+.modal-close{margin-top:16px;width:100%;padding:12px;background:#e8581a;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;}
+.success-msg{font-size:15px;}
+
+</style>
+</head>
+<body>
+
+<div class="deadline-bar">⏰ 카라향 주문은 6/10(화) 마감입니다</div>
+<div class="notice-bar">🚚 전국 무료 배송 &nbsp;|&nbsp; 입금 확인 후 순차 발송</div>
+
+<div class="hero">
+  <div class="brand-badge">제주 직송</div>
+  <h1><span class="small">'부(父)업하는 아빠'가 소개하는</span>산방산 농수산<br>고당도 제주감귤</h1>
+  <p>제주 산방산 자락에서 직접 키운<br>달콤한 카라향을 산지 직송으로 보내드려요</p>
+</div>
+
+<!-- 품목 소개 (보기용) -->
+<div class="showcase">
+  <div class="sc-title">🍊 품목 소개</div>
+  <div class="prod-card">
+    <img class="fruit-img" src="img/karahyang.jpg" onerror="this.style.opacity=0.0" alt="카라향 정품 소과">
+    <div class="prod-body">
+      <div class="prod-name">카라향 정품 소과</div>
+      <div class="prod-desc">씨가 거의 없어요! 껍질이 얇고 과즙이 풍부한 고당도 정품입니다.</div>
+      <div class="mini-price"><span>3kg 35,000원</span><span>5kg 49,000원</span><span>10kg 79,000원</span></div>
+    </div>
+  </div>
+  <div class="prod-card">
+    <img class="fruit-img" src="img/ugly.jpg" onerror="this.style.opacity=0.0" alt="못난이 카라향">
+    <div class="prod-body">
+      <div class="prod-name">못난이 카라향</div>
+      <div class="prod-desc">씨가 있고 달콤·새콤해요. 겉모양은 못나도 맛은 그대로인 알뜰 상품!</div>
+      <div class="mini-price"><span>3kg 25,000원</span><span>5kg 38,000원</span><span>10kg 58,000원</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="wizard">
+  <div class="steps">
+    <div class="step-dot active" id="dot-1"><span class="num">1</span>받는 곳·상품</div>
+    <div class="step-dot" id="dot-2"><span class="num">2</span>입금·확인</div>
+  </div>
+
+  <!-- STEP 1 : 배송지 + 상품 -->
+  <div class="step active" id="step-1">
+    <div class="step-q">📦 어디로 보낼까요?</div>
+    <div class="step-help">한 곳만 보내면 그대로,<br>여러 집에 보내려면 <b>'받는 곳 추가'</b>를 누르세요.</div>
+
+    <div id="dests"></div>
+
+    <button class="add-dest" onclick="addDest()">＋ 받는 곳 추가 (다른 주소로 보내기)</button>
+
+    <div class="grand"><span class="gl">전체 합계</span><span class="ga" id="grand-total">0원</span></div>
+    <div class="ship0">🚚 택배비 0원 (무료배송)</div>
+
+    <div class="nav-btns">
+      <button class="btn-next" id="next-1" onclick="goStep(2)" disabled>다음 →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 : 입금 + 확인 -->
+  <div class="step" id="step-2">
+    <div class="step-q">💰 입금·확인</div>
+    <div class="step-help">입금자명은 한 번만 적으면 돼요.</div>
+
+    <label class="input-label">입금자명 <span class="req">*</span></label>
+    <input class="big-input" type="text" id="inp-depositor" placeholder="입금하실 분 성함" oninput="validStep2()">
+
+    <div class="summary" id="order-summary"></div>
+
+    <div class="agree-box">
+      <label class="agree-all"><input type="checkbox" id="agree-all" onchange="toggleAll(this)">전체 동의</label>
+      <label class="agree-item">
+        <input type="checkbox" id="agree-privacy" onchange="updateSubmit()">
+        <span><span class="agree-tag agree-req">필수</span>개인정보 수집·이용 동의
+        <button type="button" class="btn-detail" onclick="openModal('m-privacy')">자세히</button>
+        <span class="req-note"> · 미동의 시 주문이 불가합니다.</span></span>
+      </label>
+      <label class="agree-item">
+        <input type="checkbox" id="agree-marketing" onchange="updateSubmit()">
+        <span><span class="agree-tag agree-opt">선택</span>맛난 귤이 나오면 소개해드려도 괜찮을까요? (선택)</span>
+      </label>
+    </div>
+
+    <label class="input-label">결제 방법</label>
+    <div class="pay-tabs">
+      <div class="pay-tab active">무통장입금<span class="pay-badge">계좌이체</span></div>
+      <div class="pay-tab disabled" id="pay-card">카드결제<span class="pay-badge">준비중</span></div>
+    </div>
+
+    <div class="bank-info">
+      <div class="bank-title">입금 계좌 안내</div>
+      <div class="bank-row"><span class="bank-key">은행</span><span class="bank-val">하나은행</span></div>
+      <div class="bank-row"><span class="bank-key">계좌번호</span><span class="bank-val bank-acct-line"><span id="bank-acct">115-910946-09507</span><button class="copy-mini" onclick="copyAcct()">복사</button></span></div>
+      <div class="bank-row"><span class="bank-key">예금주</span><span class="bank-val">이영현</span></div>
+      <div style="font-size:11px;color:#9a7a50;margin-top:10px;line-height:1.6;">입금 확인 후 순차 발송됩니다.<br>입금자명은 주문자명과 동일하게 부탁드립니다.</div>
+    </div>
+
+    <div class="turnstile-wrap"><div class="cf-turnstile" id="turnstile" data-sitekey="" data-callback="onTurnstile" data-theme="light"></div></div>
+
+    <div class="nav-btns">
+      <button class="btn-prev" onclick="goStep(1)">← 이전</button>
+      <button class="btn-next" id="submit-btn" onclick="submitOrder()" disabled>주문하기</button>
+    </div>
+  </div>
+
+  <!-- 주문완료 -->
+  <div class="success-msg" id="success-msg">
+    ✅ 주문이 접수되었어요!<br>
+    주문번호 <strong id="ok-id"></strong> · 배송지 <strong id="ok-count"></strong>곳<br>
+    총 결제금액 <strong id="ok-total"></strong><br><br>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:left;color:#5a3e20;">
+      <div style="font-weight:700;margin-bottom:6px;">입금 계좌</div>
+      하나은행 <b>115-910946-09507</b> (이영현)
+      <span style="display:inline-block;margin-left:6px;"><button class="copy-mini" onclick="copyAcct()">복사</button></span>
+      <div style="margin-top:8px;font-size:13px;">입금자명: <b id="ok-depositor"></b> 으로 입금 부탁드립니다.</div>
+    </div>
+  </div>
+</div>
+
+<div class="action-grid">
+  <button class="action-btn kakao" onclick="shareKakao()">💬 카카오톡 공유</button>
+  <a class="action-btn insta" id="btn-insta" href="#" target="_blank" rel="noopener">📷 인스타그램</a>
+  <a class="action-btn disabled" id="btn-kakao-ch" href="#">💬 카카오 채널<br>(준비중)</a>
+  <a class="action-btn disabled" id="btn-naver" href="#">🟢 네이버 톡톡<br>(준비중)</a>
+</div>
+
+<div class="footer">
+  <div style="font-size:13px;color:#fff;font-weight:700;">산방산 농수산</div>
+  <div style="margin-top:8px;"><a class="policy" href="privacy.html" target="_blank">개인정보 처리방침</a></div>
+  <div class="biz">
+    상호: 셀렙 | 대표: 이영현 | 사업자등록번호 637-05-03629<br>
+    부산광역시 북구 화명대로 20, 8층 801-123호(화명동, 대성빌딩)
+  </div>
+</div>
+
+<div class="modal-bg" id="m-privacy">
+  <div class="modal-box">
+    <h3>개인정보 수집·이용 동의 (필수)</h3>
+    <h4>수집 항목</h4><p>받는분 성함, 연락처, 주소, 입금자명</p>
+    <h4>이용 목적</h4><p>주문 상품 배송 및 주문·입금 확인</p>
+    <h4>보유 및 이용 기간</h4><p>관련 법령(전자상거래 등에서의 소비자보호에 관한 법률 등)에 따른 기간 보관 후 지체 없이 파기합니다.</p>
+    <p class="req-note" style="margin-top:8px;">※ 미동의 시 주문이 불가합니다.</p>
+    <button class="modal-close" onclick="closeModal('m-privacy')">확인</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
+<script>
+var CONFIG = {
+  API_BASE: "/api",
+  TURNSTILE_SITEKEY: "0x4AAAAAADdr7Us4sTQOae9M",
+  KAKAO_JS_KEY: "",
+  INSTAGRAM_URL: "https://instagram.com/father.job",
+  KAKAO_CHANNEL_URL: "",
+  NAVER_TALK_URL: "",
+  SHARE_TITLE: "'부(父)업하는 아빠'가 소개하는 산방산 농수산 고당도 제주감귤",
+  SHARE_DESC: "제주 산방산 자락 고당도 카라향! 택배비 무료, 산지 직송. 카라향 6/10 마감!",
+  BANK_ACCT: "115-910946-09507"
+};
+var PRICES = {
+  A: { name:"카라향 정품 소과", "3kg":35000, "5kg":49000, "10kg":79000 },
+  B: { name:"못난이 카라향",     "3kg":25000, "5kg":38000, "10kg":58000 }
+};
+var WEIGHTS=["3kg","5kg","10kg"];
+var turnstileToken="";
+
+function blankDest(){ return {name:"",phone:"",zip:"",addr:"",detail:"",req:"",items:[]}; }
+var dests=[ blankDest() ];
+
+function won(n){ return Number(n).toLocaleString("ko-KR")+"원"; }
+function esc(s){ return (s||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+function destTotal(d){ return d.items.reduce(function(s,it){return s+it.unit*it.qty;},0); }
+function grandTotal(){ return dests.reduce(function(s,d){return s+destTotal(d);},0); }
+
+/* 배송지 렌더 */
+function renderDests(){
+  var box=document.getElementById("dests");
+  box.innerHTML=dests.map(function(d,di){
+    var prods=["A","B"].map(function(g){
+      var btns=WEIGHTS.map(function(w){
+        return '<button class="w-btn" id="wb-'+di+'-'+g+'-'+w+'" onclick="addItem('+di+',\''+g+'\',\''+w+'\')">'
+          +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g][w])+'</span><span class="w-add">＋ 담기</span></button>';
+      }).join("");
+      return '<div class="dp-name">'+PRICES[g].name+'</div><div class="w-btns">'+btns+'</div>';
+    }).join("");
+    var cart = d.items.length===0
+      ? '<div class="dest-cart-empty">위에서 무게를 눌러 담아주세요.</div>'
+      : d.items.map(function(it,ii){
+          return '<div class="dci"><span class="n">'+it.name+' '+it.weight+'</span>'
+            +'<span class="q"><button onclick="chItem('+di+','+ii+',-1)">−</button><b>'+it.qty+'</b><button onclick="chItem('+di+','+ii+',1)">＋</button></span>'
+            +'<span class="a">'+won(it.unit*it.qty)+'</span></div>';
+        }).join("");
+    var delBtn = dests.length>1 ? '<button class="del" onclick="removeDest('+di+')">삭제</button>' : '';
+    return '<div class="dest-card">'
+      +'<div class="dest-head"><span class="t">📮 받는 곳 '+(di+1)+'</span>'+delBtn+'</div>'
+      +'<label class="input-label">받는분 성함 <span class="req">*</span></label>'
+      +'<input class="big-input" type="text" value="'+esc(d.name)+'" placeholder="홍길동" oninput="setF('+di+',\'name\',this.value)">'
+      +'<label class="input-label">연락처 <span class="req">*</span></label>'
+      +'<input class="big-input" type="tel" value="'+esc(d.phone)+'" placeholder="010-0000-0000" oninput="setF('+di+',\'phone\',this.value)">'
+      +'<label class="input-label">주소 <span class="req">*</span></label>'
+      +'<div class="addr-row"><input class="big-input" type="text" value="'+esc(d.zip)+'" placeholder="우편번호" readonly style="flex:1;"><button class="btn-search" onclick="openPostcode('+di+')">주소 검색</button></div>'
+      +'<input class="big-input" type="text" value="'+esc(d.addr)+'" placeholder="기본주소" readonly>'
+      +'<input class="big-input" type="text" value="'+esc(d.detail)+'" placeholder="상세주소 (동/호수 등)" oninput="setF('+di+',\'detail\',this.value)">'
+      +'<input class="big-input" type="text" value="'+esc(d.req)+'" placeholder="배송 요청사항 (선택)" oninput="setF('+di+',\'req\',this.value)">'
+      +'<div class="dp-block">'+prods+'</div>'
+      +'<div class="dest-cart">'+cart+'</div>'
+      +'<div class="dest-sub"><span>이 배송지 합계</span><b>'+won(destTotal(d))+'</b></div>'
+      +'</div>';
+  }).join("");
+  document.getElementById("grand-total").textContent=won(grandTotal());
+  validStep1();
+}
+
+function setF(di,f,v){ dests[di][f]=v; if(f==="phone"||f==="name") validStep1(); }
+function addItem(di,g,w){
+  var d=dests[di], it=d.items.find(function(x){return x.group===g&&x.weight===w;});
+  if(it){ it.qty++; } else { d.items.push({group:g,name:PRICES[g].name,weight:w,qty:1,unit:PRICES[g][w]}); }
+  renderDests();
+  var btn=document.getElementById("wb-"+di+"-"+g+"-"+w);
+  if(btn){ btn.classList.remove("added"); void btn.offsetWidth; btn.classList.add("added"); }
+  toast(PRICES[g].name+" "+w+" 담았어요");
+}
+function chItem(di,ii,delta){ var d=dests[di]; d.items[ii].qty+=delta; if(d.items[ii].qty<=0) d.items.splice(ii,1); renderDests(); }
+function addDest(){ dests.push(blankDest()); renderDests(); toast("받는 곳을 추가했어요"); window.scrollBy({top:200,behavior:"smooth"}); }
+function removeDest(di){ if(dests.length<=1) return; dests.splice(di,1); renderDests(); }
+
+function openPostcode(di){
+  new daum.Postcode({ oncomplete:function(data){
+    dests[di].zip=data.zonecode; dests[di].addr=data.roadAddress||data.jibunAddress;
+    renderDests();
+  }}).open();
+}
+
+function destOk(d){ return d.name.trim() && /^[0-9\-+\s]{8,20}$/.test(d.phone.trim()) && d.addr.trim() && d.items.length>0; }
+function allOk(){ return dests.length>0 && dests.every(destOk); }
+function validStep1(){ document.getElementById("next-1").disabled=!allOk(); }
+function validStep2(){ updateSubmit(); }
+
+function goStep(n){
+  if(n===2 && !allOk()){ toast("받는분·연락처·주소·상품을 모두 채워주세요."); return; }
+  document.getElementById("step-1").classList.toggle("active",n===1);
+  document.getElementById("step-2").classList.toggle("active",n===2);
+  document.getElementById("dot-1").classList.toggle("active",n===1);
+  document.getElementById("dot-2").classList.toggle("active",n===2);
+  if(n===2) renderSummary();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderSummary(){
+  var html=dests.map(function(d,di){
+    var lines=d.items.map(function(it){return it.name+" "+it.weight+" × "+it.qty+" = "+won(it.unit*it.qty);}).join("<br>");
+    return '<div class="sd"><b>📮 받는 곳 '+(di+1)+' · '+esc(d.name)+'</b> ('+esc(d.phone)+')<br>'
+      +esc("("+d.zip+") "+d.addr+" "+d.detail)+'<br>'+lines+'<br><b>소계 '+won(destTotal(d))+'</b></div>';
+  }).join("");
+  html+='<div style="margin-top:10px;font-size:16px;"><b>전체 합계 '+won(grandTotal())+'</b> (택배비 0원)</div>';
+  document.getElementById("order-summary").innerHTML=html;
+}
+
+function copyAcct(){ var t=CONFIG.BANK_ACCT; if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast("복사됨: "+t);},function(){fb(t);});}else{fb(t);} }
+function fb(t){ var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("복사됨: "+t);}catch(e){toast("복사 실패");}document.body.removeChild(ta); }
+function toast(m){ var el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(function(){el.classList.remove("show");},1700); }
+
+function toggleAll(cb){ document.getElementById("agree-privacy").checked=cb.checked; document.getElementById("agree-marketing").checked=cb.checked; updateSubmit(); }
+function updateSubmit(){
+  var p=document.getElementById("agree-privacy").checked, m=document.getElementById("agree-marketing").checked;
+  document.getElementById("agree-all").checked=p&&m;
+  document.getElementById("submit-btn").disabled=!(p && document.getElementById("inp-depositor").value.trim() && allOk());
+}
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+function onTurnstile(t){ turnstileToken=t; }
+
+function submitOrder(){
+  if(!document.getElementById("agree-privacy").checked){ alert("주문을 위해 개인정보 수집·이용 동의가 필요합니다."); return; }
+  var depositor=document.getElementById("inp-depositor").value.trim();
+  if(!depositor){ alert("입금자명을 입력해주세요."); return; }
+  if(!allOk()){ alert("받는분·연락처·주소·상품을 모두 채워주세요."); return; }
+  if(CONFIG.TURNSTILE_SITEKEY && !turnstileToken){ alert("봇 방지 인증을 완료해주세요."); return; }
+  var payload={
+    depositor_name:depositor, agree_privacy:true,
+    agree_marketing:document.getElementById("agree-marketing").checked,
+    turnstileToken:turnstileToken,
+    shipments:dests.map(function(d){ return {
+      name:d.name.trim(), phone:d.phone.trim(), zipcode:d.zip.trim(),
+      address:d.addr.trim(), address_detail:d.detail.trim(), request:d.req.trim(),
+      items:d.items.map(function(it){return {group:it.group,weight:it.weight,qty:it.qty};})
+    }; })
+  };
+  var btn=document.getElementById("submit-btn"); btn.disabled=true; btn.textContent="접수 중...";
+  fetch(CONFIG.API_BASE+"/orders",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)})
+    .then(function(r){return r.json();}).then(function(res){
+      if(res.ok){
+        document.getElementById("ok-id").textContent="#"+(res.batch_id?res.batch_id.slice(0,8):"");
+        document.getElementById("ok-count").textContent=res.count;
+        document.getElementById("ok-total").textContent=won(res.total);
+        document.getElementById("ok-depositor").textContent=depositor;
+        document.getElementById("step-2").classList.remove("active");
+        document.querySelector(".steps").style.display="none";
+        var msg=document.getElementById("success-msg"); msg.style.display="block"; msg.scrollIntoView({behavior:"smooth"});
+      } else { alert(res.error||"주문 처리 중 오류가 발생했습니다."); btn.disabled=false; btn.textContent="주문하기"; if(window.turnstile){window.turnstile.reset();turnstileToken="";} }
+    }).catch(function(){ alert("네트워크 오류로 주문을 보내지 못했습니다."); btn.disabled=false; btn.textContent="주문하기"; });
+}
+
+function shareKakao(){
+  if(!CONFIG.KAKAO_JS_KEY){ toast("카카오 공유 준비중입니다."); return; }
+  if(!window.Kakao.isInitialized()){ Kakao.init(CONFIG.KAKAO_JS_KEY); }
+  Kakao.Share.sendDefault({ objectType:"feed",
+    content:{ title:CONFIG.SHARE_TITLE, description:CONFIG.SHARE_DESC, imageUrl:location.origin+"/og.jpg", link:{mobileWebUrl:location.href,webUrl:location.href} },
+    buttons:[{title:"주문하러 가기", link:{mobileWebUrl:location.href,webUrl:location.href}}] });
+}
+
+(function init(){
+  if(CONFIG.TURNSTILE_SITEKEY){ document.getElementById("turnstile").setAttribute("data-sitekey",CONFIG.TURNSTILE_SITEKEY); }
+  else { document.querySelector(".turnstile-wrap").style.display="none"; }
+  var insta=document.getElementById("btn-insta");
+  if(CONFIG.INSTAGRAM_URL){ insta.href=CONFIG.INSTAGRAM_URL; } else { insta.classList.add("disabled"); }
+  if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("disabled");k.innerHTML="💬 카카오 채널"; }
+  if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("disabled");nv.innerHTML="🟢 네이버 톡톡"; }
+  document.getElementById("pay-card").addEventListener("click",function(){toast("카드결제 준비중입니다.");});
+  document.getElementById("bank-acct").textContent=CONFIG.BANK_ACCT;
+  renderDests();
+})();
+</script>
+
+</body>
+</html>

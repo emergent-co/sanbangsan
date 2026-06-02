@@ -1,0 +1,13 @@
+name = "sanbangsan"
+compatibility_date = "2025-05-01"
+pages_build_output_dir = "."
+
+# D1 바인딩 — 코드에서 env.DB 로 접근
+# database_id 는 `wrangler d1 create sanbangsan-db` 실행 후 출력값으로 교체
+[[d1_databases]]
+binding = "DB"
+database_name = "sanbangsan-db"
+database_id = "e0699897-ca58-4235-ae15-a38db43de1e5"
+
+# 비밀값(TURNSTILE_SECRET, ADMIN_EMAIL, SOLAPI_*)은 toml에 두지 않는다.
+# Cloudflare 대시보드 > Pages > Settings > Environment variables 에 Secret 으로 등록.

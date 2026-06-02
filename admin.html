@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>산방산 농수산 — 주문 관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5efe6;color:#2d1a00;max-width:760px;margin:0 auto;padding-bottom:90px;}
+.top{background:#2d1a00;color:#fff;padding:16px 18px;position:sticky;top:0;z-index:50;}
+.top h1{font-size:17px;font-weight:700;}
+.top .sub{font-size:11px;color:#c8a878;margin-top:2px;}
+.tabs{display:flex;gap:6px;padding:12px 14px;background:#fff;border-bottom:1px solid #e8ddc8;position:sticky;top:54px;z-index:40;flex-wrap:wrap;}
+.tab{padding:8px 14px;border:1px solid #e0c9a0;border-radius:20px;background:#fff;font-size:13px;font-weight:600;color:#7a5a35;cursor:pointer;}
+.tab.active{background:#e8581a;color:#fff;border-color:#e8581a;}
+.tab .cnt{font-size:11px;opacity:.8;margin-left:3px;}
+.bar{display:flex;gap:8px;padding:10px 14px;flex-wrap:wrap;align-items:center;}
+.bar .info{font-size:12px;color:#7a5a35;}
+.btn{padding:8px 14px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-ghost{background:#fff;border:1px solid #e0c9a0;color:#5a3e20;}
+.btn-dark{background:#2d1a00;color:#fff;}
+.btn-mkt{background:#1565c0;color:#fff;}
+.list{padding:0 14px;}
+.card{background:#fff;border:1px solid #e8ddc8;border-radius:12px;padding:14px;margin-bottom:12px;}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.card-head input[type=checkbox]{width:20px;height:20px;accent-color:#e8581a;}
+.oid{font-size:15px;font-weight:800;color:#e8581a;}
+.otime{font-size:11px;color:#9a7a50;margin-left:auto;}
+.status-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;}
+.s-신규{background:#fff3e0;color:#a05c10;}
+.s-입금확인{background:#e3f2fd;color:#1565c0;}
+.s-발송완료{background:#e8f5e9;color:#2e7d32;}
+.row{display:flex;font-size:13px;padding:3px 0;color:#5a3e20;}
+.row .k{width:62px;color:#9a7a50;flex-shrink:0;}
+.row .v{flex:1;word-break:break-all;}
+.row .mini{background:#2d1a00;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:6px;}
+.items{background:#fffbf6;border:1px solid #f0d9b5;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:12px;color:#5a3e20;line-height:1.7;}
+.total{font-weight:800;color:#e8581a;}
+.mkt-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.mkt-o{background:#e3f2fd;color:#1565c0;}
+.mkt-x{background:#eee;color:#999;}
+.batch-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#ede7f6;color:#5e35b1;}
+.acts{display:flex;gap:6px;margin-top:10px;align-items:center;}
+.acts .lbl{font-size:12px;color:#9a7a50;}
+.status-sel{flex:1;padding:10px;border:1px solid #e0c9a0;border-radius:8px;font-size:14px;font-weight:700;color:#2d1a00;background:#fffbf6;cursor:pointer;}
+.sticky-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e8ddc8;padding:10px 14px;display:flex;gap:8px;max-width:760px;margin:0 auto;z-index:60;}
+.sticky-foot .btn{flex:1;}
+.empty{text-align:center;color:#9a7a50;padding:40px 0;font-size:14px;}
+.loading{text-align:center;color:#9a7a50;padding:40px 0;}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#2d1a00;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;max-width:90%;text-align:center;}
+.toast.show{opacity:.95;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.show{display:flex;}
+.modal-box{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;}
+.modal-box h3{font-size:15px;margin-bottom:10px;}
+.modal-box textarea{width:100%;height:240px;font-size:12px;font-family:monospace;border:1px solid #e0c9a0;border-radius:8px;padding:10px;resize:vertical;}
+.modal-foot{display:flex;gap:8px;margin-top:12px;}
+.modal-foot .btn{flex:1;}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🍊 산방산 농수산 — 주문 관리</h1>
+  <div class="sub">관리자 전용 · Cloudflare Access 보호 영역</div>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-st="신규" onclick="setTab(this)">신규<span class="cnt" id="c-신규"></span></div>
+  <div class="tab" data-st="입금확인" onclick="setTab(this)">입금확인<span class="cnt" id="c-입금확인"></span></div>
+  <div class="tab" data-st="발송완료" onclick="setTab(this)">발송완료<span class="cnt" id="c-발송완료"></span></div>
+  <div class="tab" data-st="전체" onclick="setTab(this)">전체<span class="cnt" id="c-전체"></span></div>
+</div>
+
+<div class="bar">
+  <span class="info" id="sel-info">선택 0건</span>
+  <button class="btn btn-ghost" onclick="selectAll()">전체선택</button>
+  <button class="btn btn-ghost" onclick="clearSel()">선택해제</button>
+  <button class="btn btn-mkt" onclick="extractMarketing()">마케팅 동의자 추출</button>
+  <button class="btn btn-ghost" onclick="loadOrders()">새로고침</button>
+</div>
+
+<div class="list" id="list"><div class="loading">불러오는 중…</div></div>
+
+<div class="sticky-foot">
+  <button class="btn btn-dark" onclick="smsSelected()">📲 선택 주문 → 사장님께 문자전송</button>
+  <button class="btn btn-ghost" onclick="copySelected()">📋 문자내용 복사</button>
+</div>
+
+<div class="modal-bg" id="m-text">
+  <div class="modal-box">
+    <h3 id="m-text-title">문자 내용</h3>
+    <textarea id="m-text-area" readonly></textarea>
+    <div class="modal-foot">
+      <button class="btn btn-dark" onclick="copyTextArea()">복사</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-text')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 설정 ===== */
+var CONFIG = {
+  API_BASE: "/api",
+  OWNER_PHONE: "010-6553-5371"
+};
+
+var allOrders = [];
+var curTab = "신규";
+var selected = new Set();
+
+function won(n){ return Number(n).toLocaleString("ko-KR") + "원"; }
+function esc(s){ return (s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
+
+function toast(msg){
+  var el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(window.__t); window.__t=setTimeout(function(){el.classList.remove("show");},1800);
+}
+
+function setTab(el){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  el.classList.add("active");
+  curTab = el.getAttribute("data-st");
+  selected.clear();
+  loadOrders();
+}
+
+function loadOrders(){
+  var q = curTab === "전체" ? "" : ("?status=" + encodeURIComponent(curTab));
+  document.getElementById("list").innerHTML = '<div class="loading">불러오는 중…</div>';
+  fetch(CONFIG.API_BASE + "/orders" + q, { headers:{ "accept":"application/json" } })
+    .then(function(r){
+      if(r.status===401){ throw new Error("인증이 필요합니다. Cloudflare Access 로그인 후 이용하세요."); }
+      return r.json();
+    })
+    .then(function(res){
+      if(!res.ok){ throw new Error(res.error || "조회 실패"); }
+      allOrders = res.orders || [];
+      renderList();
+      updateCounts();
+    })
+    .catch(function(e){
+      document.getElementById("list").innerHTML = '<div class="empty">'+esc(e.message)+'</div>';
+    });
+}
+
+function updateCounts(){
+  fetch(CONFIG.API_BASE + "/orders", { headers:{ "accept":"application/json" } })
+    .then(function(r){return r.ok?r.json():{ok:false};})
+    .then(function(res){
+      if(!res.ok) return;
+      var c={ "신규":0,"입금확인":0,"발송완료":0,"전체":res.orders.length };
+      res.orders.forEach(function(o){ if(c[o.status]!==undefined) c[o.status]++; });
+      ["신규","입금확인","발송완료","전체"].forEach(function(k){
+        document.getElementById("c-"+k).textContent = "("+c[k]+")";
+      });
+    });
+}
+
+function renderList(){
+  var el = document.getElementById("list");
+  if(allOrders.length===0){ el.innerHTML = '<div class="empty">주문이 없습니다.</div>'; updateSelInfo(); return; }
+  var batchCount={}, batchSeen={};
+  allOrders.forEach(function(o){ if(o.batch_id){ batchCount[o.batch_id]=(batchCount[o.batch_id]||0)+1; } });
+  el.innerHTML = allOrders.map(function(o){
+    var items = [];
+    try{ items = JSON.parse(o.items_json); }catch(e){}
+    var itemsHtml = items.map(function(it){
+      return esc(it.name)+" "+esc(it.weight)+" × "+it.qty+" = "+won(it.unit*it.qty);
+    }).join("<br>");
+    var t = (o.created_at||"").replace("T"," ").replace("Z","");
+    var mkt = o.agree_marketing==1
+      ? '<span class="mkt-badge mkt-o">광고 O</span>'
+      : '<span class="mkt-badge mkt-x">광고 X</span>';
+    var addr = esc(o.address) + " " + esc(o.address_detail||"");
+    var bc = o.batch_id ? (batchCount[o.batch_id]||1) : 1;
+    var batchBadge = "";
+    if(bc>1){ batchSeen[o.batch_id]=(batchSeen[o.batch_id]||0)+1; batchBadge=' <span class="batch-badge">🔗 묶음주문 '+batchSeen[o.batch_id]+'/'+bc+'</span>'; }
+    return ''
+      +'<div class="card">'
+      +'  <div class="card-head">'
+      +'    <input type="checkbox" '+(selected.has(o.id)?"checked":"")+' onchange="toggleSel('+o.id+',this)">'
+      +'    <span class="oid">#'+o.id+'</span>'
+      +'    <span class="status-pill s-'+o.status+'">'+o.status+'</span> '+mkt+batchBadge
+      +'    <span class="otime">'+esc(t)+'</span>'
+      +'  </div>'
+      +'  <div class="row"><span class="k">받는분</span><span class="v">'+esc(o.name)+'</span></div>'
+      +'  <div class="row"><span class="k">연락처</span><span class="v">'+esc(o.phone)+'<button class="mini" onclick="copyText(\''+jsstr(o.phone)+'\')">복사</button></span></div>'
+      +'  <div class="row"><span class="k">주소</span><span class="v">('+esc(o.zipcode||"")+') '+addr+'<button class="mini" onclick="copyText(\''+jsstr((o.zipcode?"("+o.zipcode+") ":"")+o.address+" "+(o.address_detail||""))+'\')">복사</button></span></div>'
+      +(o.request?'<div class="row"><span class="k">요청</span><span class="v">'+esc(o.request)+'</span></div>':'')
+      +'  <div class="row"><span class="k">입금자</span><span class="v">'+esc(o.depositor_name)+'</span></div>'
+      +'  <div class="items">'+itemsHtml+'<div style="margin-top:6px;">합계 <span class="total">'+won(o.total_amount)+'</span> · 택배비 0원</div></div>'
+      +'  <div class="acts"><span class="lbl">상태변경</span>'
+      +'    <select class="status-sel" onchange="setStatus('+o.id+',this.value)">'
+      +'      <option value="신규"'+(o.status==="신규"?" selected":"")+'>신규</option>'
+      +'      <option value="입금확인"'+(o.status==="입금확인"?" selected":"")+'>입금확인</option>'
+      +'      <option value="발송완료"'+(o.status==="발송완료"?" selected":"")+'>발송완료</option>'
+      +'    </select>'
+      +'  </div>'
+      +'</div>';
+  }).join("");
+  updateSelInfo();
+}
+
+function jsstr(s){ return (s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "); }
+
+function toggleSel(id, cb){ if(cb.checked) selected.add(id); else selected.delete(id); updateSelInfo(); }
+function selectAll(){ allOrders.forEach(function(o){selected.add(o.id);}); renderList(); }
+function clearSel(){ selected.clear(); renderList(); }
+function updateSelInfo(){ document.getElementById("sel-info").textContent = "선택 "+selected.size+"건"; }
+
+/* 상태 변경 (드롭다운 onchange) */
+function setStatus(id, status){
+  fetch(CONFIG.API_BASE + "/orders/" + id, {
+    method:"PATCH", headers:{"content-type":"application/json"}, body:JSON.stringify({status:status})
+  }).then(function(r){return r.json();}).then(function(res){
+    if(res.ok){ toast("#"+id+" → "+status); loadOrders(); }
+    else { toast(res.error || "변경 실패"); }
+  }).catch(function(){ toast("네트워크 오류"); });
+}
+
+function buildSmsText(){
+  var picked = allOrders.filter(function(o){return selected.has(o.id);});
+  if(picked.length===0){ return null; }
+  return picked.map(function(o){
+    var items=[]; try{items=JSON.parse(o.items_json);}catch(e){}
+    var first = items[0] ? (items[0].name+" "+items[0].weight+" x"+items[0].qty) : "";
+    var more = items.length>1 ? " 외 "+(items.length-1)+"건" : "";
+    return "[산방산 주문 #"+o.id+"]\n"
+      + o.name + " / " + o.phone + "\n"
+      + o.address + " " + (o.address_detail||"") + "\n"
+      + first + more + " 합계 " + Number(o.total_amount).toLocaleString("ko-KR") + "원\n"
+      + "입금자: " + o.depositor_name;
+  }).join("\n\n");
+}
+
+function smsSelected(){
+  var text = buildSmsText();
+  if(!text){ toast("선택된 주문이 없습니다."); return; }
+  var phone = CONFIG.OWNER_PHONE.replace(/[^0-9]/g,"");
+  var uri = "sms:" + phone + "?body=" + encodeURIComponent(text);
+  // TODO(2단계): 솔라피 자동발송으로 전환 — fetch("/api/notify",{method:"POST",body:...})
+  window.location.href = uri;
+  setTimeout(function(){ openTextModal("선택 주문 문자내용 (수동 복사용)", text); }, 600);
+}
+
+function copySelected(){
+  var text = buildSmsText();
+  if(!text){ toast("선택된 주문이 없습니다."); return; }
+  openTextModal("선택 주문 문자내용", text);
+}
+
+function extractMarketing(){
+  fetch(CONFIG.API_BASE + "/orders", { headers:{ "accept":"application/json" } })
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(!res.ok){ toast("조회 실패"); return; }
+      var seen={}; var lines=[];
+      res.orders.forEach(function(o){
+        if(o.agree_marketing==1 && !seen[o.phone]){ seen[o.phone]=1; lines.push(o.name+" "+o.phone); }
+      });
+      if(lines.length===0){ toast("마케팅 동의자가 없습니다."); return; }
+      openTextModal("마케팅 수신 동의자 ("+lines.length+"명)", lines.join("\n"));
+    });
+}
+
+function openTextModal(title, text){
+  document.getElementById("m-text-title").textContent = title;
+  document.getElementById("m-text-area").value = text;
+  document.getElementById("m-text").classList.add("show");
+}
+function copyTextArea(){ var ta=document.getElementById("m-text-area"); copyText(ta.value); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+
+function copyText(t){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){toast("복사됨");},function(){fallbackCopy(t);});
+  } else { fallbackCopy(t); }
+}
+function fallbackCopy(t){
+  var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta);
+  ta.select(); try{document.execCommand("copy");toast("복사됨");}catch(e){toast("복사 실패");}
+  document.body.removeChild(ta);
+}
+
+loadOrders();
+</script>
+</body>
+</html>

@@ -23,6 +23,12 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5e
 .btn-dark{background:#2d1a00;color:#fff;}
 .btn-mkt{background:#1565c0;color:#fff;}
 .bar2{display:flex;gap:8px;padding:8px 14px;flex-wrap:wrap;align-items:center;font-size:12px;color:#7a5a35;}
+.period-totals{display:flex;gap:8px;padding:10px 14px 2px;flex-wrap:wrap;}
+.pt-card{background:#fff;border:1px solid #e0c9a0;border-radius:10px;padding:8px 14px;font-size:13px;color:#5a3e20;}
+.pt-card b{color:#7a5a35;font-weight:700;margin-right:6px;}
+.pt-card span,.pt-card{white-space:nowrap;}
+.pt-card .c-total,.pt-card strong{color:#e8581a;}
+.pt-card i{color:#9a7a50;font-style:normal;font-size:11px;}
 .tablewrap{overflow-x:auto;padding:0 8px;}
 table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:10px;overflow:hidden;min-width:980px;}
 thead th{background:#fbf4ea;color:#7a5a35;font-weight:700;font-size:12px;text-align:left;padding:9px 8px;border-bottom:2px solid #e8ddc8;white-space:nowrap;position:sticky;top:0;}
@@ -42,8 +48,16 @@ tbody tr:hover{background:#fffaf2;}
 .mkt-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;}
 .mkt-o{background:#e3f2fd;color:#1565c0;}
 .mkt-x{background:#eee;color:#999;}
-.batch-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:#ede7f6;color:#5e35b1;margin-top:3px;}
+.batch-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:#ede7f6;color:#5e35b1;}
+.batch-toggle{background:#5e35b1;color:#fff;border:none;border-radius:5px;width:20px;height:20px;font-size:10px;cursor:pointer;margin-right:4px;vertical-align:middle;}
+.batch-parent td{background:#faf7ff;}
+.batch-child td{background:#fcfbff;}
+.batch-child .c-id{font-weight:600;}
 .status-sel{padding:6px 8px;border:1px solid #e0c9a0;border-radius:7px;font-size:13px;font-weight:700;color:#2d1a00;background:#fffbf6;cursor:pointer;}
+.pay-done{background:#e3f2fd;color:#1565c0;border-color:#90caf9;}
+.pay-wait{background:#fff;color:#9a7a50;}
+.ship-done{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;}
+.ship-wait{background:#fff;color:#9a7a50;}
 .pager{display:flex;gap:6px;align-items:center;justify-content:center;padding:14px;flex-wrap:wrap;}
 .pager button{min-width:34px;height:34px;border:1px solid #e0c9a0;background:#fff;border-radius:8px;font-size:13px;font-weight:700;color:#5a3e20;cursor:pointer;}
 .pager button.active{background:#e8581a;color:#fff;border-color:#e8581a;}
@@ -86,6 +100,8 @@ tbody tr:hover{background:#fffaf2;}
   </select>
   <button class="btn btn-ghost" onclick="loadOrders()">새로고침</button>
 </div>
+
+<div class="period-totals" id="period-totals"></div>
 
 <div class="bar2">
   <button class="btn btn-ghost" onclick="selectAllFiltered()">검색결과 전체선택</button>
@@ -157,8 +173,19 @@ var search = "";
 var pageSize = 20;
 var page = 1;
 var selected = new Set();
+var openBatches = new Set();   // 펼쳐진 묶음 batch_id
 
 function won(n){ return Number(n).toLocaleString("ko-KR") + "원"; }
+function kstDate(s){
+  if(!s) return "";
+  var iso = s.indexOf("T")>=0 ? s : s.replace(" ","T");
+  if(iso.indexOf("Z")<0 && iso.indexOf("+")<0) iso += "Z";
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return (s||"").slice(0,10);
+  var k = new Date(d.getTime()+9*3600*1000);
+  var p=function(n){return (n<10?"0":"")+n;};
+  return k.getUTCFullYear()+"-"+p(k.getUTCMonth()+1)+"-"+p(k.getUTCDate());
+}
 function esc(s){ return (s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 function jsstr(s){ return (s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "); }
 function toast(msg){ var el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(window.__t); window.__t=setTimeout(function(){el.classList.remove("show");},1800); }
@@ -187,9 +214,11 @@ function updateCounts(){
   adminFetch(CONFIG.API_BASE + "/orders?limit=500")
     .then(function(r){return r.ok?r.json():{ok:false};})
     .then(function(res){ if(!res.ok) return;
+      window.__fullOrders = res.orders || [];
       var c={ "신규":0,"입금확인":0,"발송완료":0,"전체":res.orders.length };
       res.orders.forEach(function(o){ if(c[o.status]!==undefined) c[o.status]++; });
       ["신규","입금확인","발송완료","전체"].forEach(function(k){ document.getElementById("c-"+k).textContent = "("+c[k]+")"; });
+      renderPeriodTotals();
     });
 }
 
@@ -206,56 +235,171 @@ function itemsSummary(o){
   return items.map(function(it){ return esc(it.name)+" "+esc(it.weight)+"×"+it.qty; }).join(", ");
 }
 
+/* 묶음(batch) 단위로 그룹화 — 단건은 그대로, 같은 batch_id는 하나로 묶음 */
+function buildUnits(list){
+  var seen={}, units=[];
+  list.forEach(function(o){
+    if(o.batch_id){
+      if(seen[o.batch_id]){ seen[o.batch_id].orders.push(o); return; }
+      var u={type:"batch", batch_id:o.batch_id, orders:[o]};
+      seen[o.batch_id]=u; units.push(u);
+    } else {
+      units.push({type:"single", orders:[o]});
+    }
+  });
+  return units;
+}
+
+/* 단건(또는 묶음 자식) 한 줄 */
+function singleRow(o, childBid){
+  var t = (o.created_at||"").replace("T"," ").replace("Z","");
+  if(t.length>=16) t = t.slice(5,16);
+  var mkt = o.agree_marketing==1 ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
+  var addrFull = (o.zipcode?"("+o.zipcode+") ":"")+(o.address||"")+" "+(o.address_detail||"");
+  var items = itemsSummary(o);
+  var trAttr = childBid ? (' data-br="'+childBid+'" class="batch-child"'+(openBatches.has(childBid)?"":' style="display:none"')) : "";
+  var idCell = childBid ? '<td class="c-id">↳ #'+o.id+'</td>' : '<td class="c-id">#'+o.id+'</td>';
+  var chkHandler = childBid ? "toggleSelSync" : "toggleSel";
+  return '<tr'+trAttr+'>'
+    +'<td><input class="chk" type="checkbox" '+(selected.has(o.id)?"checked":"")+' onchange="'+chkHandler+'('+o.id+',this)"></td>'
+    +idCell
+    +'<td class="c-time">'+esc(t)+'</td>'
+    +'<td>'+esc(o.name)+'</td>'
+    +'<td>'+esc(o.phone)+'<button class="mini" onclick="copyText(\''+jsstr(o.phone)+'\')">복사</button></td>'
+    +'<td class="c-addr" title="'+esc(addrFull)+'">'+esc(addrFull)+'<button class="mini" onclick="copyText(\''+jsstr(addrFull)+'\')">복사</button></td>'
+    +'<td class="c-items" title="'+esc(items)+'">'+items+'</td>'
+    +'<td class="c-total">'+won(o.total_amount)+'</td>'
+    +paySelCell(o)
+    +'<td>'+esc(o.depositor_name)+'</td>'
+    +'<td>'+mkt+'</td>'
+    +shipSelCell(o)
+    +'</tr>';
+}
+
+/* 입금 열(대기/완료) — status 입금확인·발송완료면 완료 */
+function paySelCell(o){
+  var done = (o.status==="입금확인" || o.status==="발송완료");
+  return '<td><select class="status-sel '+(done?"pay-done":"pay-wait")+'" onchange="setPay('+o.id+',this.value)">'
+    +'<option value="대기"'+(!done?" selected":"")+'>대기</option>'
+    +'<option value="완료"'+(done?" selected":"")+'>완료</option>'
+    +'</select></td>';
+}
+/* 발송 열(대기/완료) — status 발송완료면 완료 */
+function shipSelCell(o){
+  var done = (o.status==="발송완료");
+  return '<td><select class="status-sel '+(done?"ship-done":"ship-wait")+'" onchange="setShip('+o.id+',this.value)">'
+    +'<option value="대기"'+(!done?" selected":"")+'>대기</option>'
+    +'<option value="완료"'+(done?" selected":"")+'>완료</option>'
+    +'</select></td>';
+}
+
+/* 묶음 부모 줄 + 자식 줄들 */
+function batchRows(u){
+  var bid = u.batch_id, orders = u.orders;
+  var ids = orders.map(function(o){return o.id;});
+  window.__batchIds[bid] = ids;
+  var sum = orders.reduce(function(a,o){return a+Number(o.total_amount||0);},0);
+  var dep = orders[0].depositor_name;
+  var phone = orders[0].phone;
+  var dnames=[]; orders.forEach(function(o){ if(dnames.indexOf(o.name)===-1) dnames.push(o.name); });
+  var t = (orders[0].created_at||"").replace("T"," ").replace("Z","");
+  if(t.length>=16) t = t.slice(5,16);
+  var open = openBatches.has(bid);
+  var allSel = ids.every(function(id){return selected.has(id);});
+  var anyMkt = orders.some(function(o){return o.agree_marketing==1;});
+  var mkt = anyMkt ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
+  var parent = '<tr class="batch-parent">'
+    +'<td><input class="chk" type="checkbox" id="bchk-'+bid+'" '+(allSel?"checked":"")+' onchange="toggleBatchSel(\''+bid+'\',this)"></td>'
+    +'<td class="c-id"><button class="batch-toggle" onclick="toggleBatch(\''+bid+'\')">'+(open?"▼":"▶")+'</button>#'+orders[0].id+' <span class="batch-badge">묶음 '+orders.length+'곳</span></td>'
+    +'<td class="c-time">'+esc(t)+'</td>'
+    +'<td>'+esc(dnames.join(", "))+'</td>'
+    +'<td>'+esc(phone)+'</td>'
+    +'<td class="c-addr" style="color:#9a7a50">여러 배송지 '+orders.length+'곳 (펼쳐보기)</td>'
+    +'<td class="c-items" style="color:#9a7a50">↓ 펼쳐서 확인</td>'
+    +'<td class="c-total">'+won(sum)+'</td>'
+    +'<td style="color:#9a7a50;font-size:12px;">개별</td>'
+    +'<td>'+esc(dep)+'</td>'
+    +'<td>'+mkt+'</td>'
+    +'<td style="color:#9a7a50;font-size:12px;">개별</td>'
+    +'</tr>';
+  var children = orders.map(function(o){ return singleRow(o, bid); }).join("");
+  return parent + children;
+}
+
+function toggleBatch(bid){
+  if(openBatches.has(bid)) openBatches.delete(bid); else openBatches.add(bid);
+  renderTable();
+}
+function toggleBatchSel(bid, cb){
+  var ids = (window.__batchIds||{})[bid] || [];
+  ids.forEach(function(id){ if(cb.checked) selected.add(id); else selected.delete(id); });
+  renderTable();
+}
+function toggleSelSync(id, cb){ if(cb.checked) selected.add(id); else selected.delete(id); renderTable(); }
+
 function renderTable(){
+  window.__batchIds = {};
   var list = filteredOrders();
-  var total = list.length;
+  var units = buildUnits(list);
+  var total = units.length;
   var pages = Math.max(1, Math.ceil(total / pageSize));
   if(page > pages) page = pages;
   var start = (page-1)*pageSize;
-  var pageItems = list.slice(start, start+pageSize);
+  var pageUnits = units.slice(start, start+pageSize);
 
-  // 묶음(batch) 카운트 — 현재 로드분 기준
-  var batchCount={}; allOrders.forEach(function(o){ if(o.batch_id) batchCount[o.batch_id]=(batchCount[o.batch_id]||0)+1; });
-  var batchSeen={};
+  renderPeriodTotals();
 
   var wrap = document.getElementById("tablewrap");
   if(total===0){ wrap.innerHTML='<div class="empty">주문이 없습니다.</div>'; document.getElementById("pager").innerHTML=""; document.getElementById("result-info").textContent=""; updateSelInfo(); return; }
 
-  var rows = pageItems.map(function(o){
-    var t = (o.created_at||"").replace("T"," ").replace("Z","");
-    if(t.length>=16) t = t.slice(5,16); // MM-DD HH:MM
-    var mkt = o.agree_marketing==1 ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
-    var bc = o.batch_id ? (batchCount[o.batch_id]||1) : 1;
-    var batchBadge="";
-    if(bc>1){ batchSeen[o.batch_id]=(batchSeen[o.batch_id]||0)+1; batchBadge='<br><span class="batch-badge">묶음 '+batchSeen[o.batch_id]+'/'+bc+'</span>'; }
-    var addrFull = (o.zipcode?"("+o.zipcode+") ":"")+(o.address||"")+" "+(o.address_detail||"");
-    var items = itemsSummary(o);
-    return '<tr>'
-      +'<td><input class="chk" type="checkbox" '+(selected.has(o.id)?"checked":"")+' onchange="toggleSel('+o.id+',this)"></td>'
-      +'<td class="c-id">#'+o.id+batchBadge+'</td>'
-      +'<td class="c-time">'+esc(t)+'</td>'
-      +'<td>'+esc(o.name)+'</td>'
-      +'<td>'+esc(o.phone)+'<button class="mini" onclick="copyText(\''+jsstr(o.phone)+'\')">복사</button></td>'
-      +'<td class="c-addr" title="'+esc(addrFull)+'">'+esc(addrFull)+'<button class="mini" onclick="copyText(\''+jsstr(addrFull)+'\')">복사</button></td>'
-      +'<td class="c-items" title="'+esc(items)+'">'+items+'</td>'
-      +'<td class="c-total">'+won(o.total_amount)+'</td>'
-      +'<td>'+esc(o.depositor_name)+'</td>'
-      +'<td>'+mkt+'</td>'
-      +'<td><select class="status-sel" onchange="setStatus('+o.id+',this.value)">'
-        +'<option value="신규"'+(o.status==="신규"?" selected":"")+'>신규</option>'
-        +'<option value="입금확인"'+(o.status==="입금확인"?" selected":"")+'>입금확인</option>'
-        +'<option value="발송완료"'+(o.status==="발송완료"?" selected":"")+'>발송완료</option>'
-      +'</select></td>'
-      +'</tr>';
+  var rows = pageUnits.map(function(u){
+    return u.orders.length>1 ? batchRows(u) : singleRow(u.orders[0]);
   }).join("");
 
   wrap.innerHTML = '<table><thead><tr>'
-    +'<th></th><th>주문#</th><th>시각</th><th>받는분</th><th>연락처</th><th>주소</th><th>품목</th><th>합계</th><th>입금자</th><th>광고</th><th>상태변경</th>'
+    +'<th></th><th>주문#</th><th>시각</th><th>받는분</th><th>연락처</th><th>주소</th><th>품목</th><th>합계</th><th>입금</th><th>입금자</th><th>광고</th><th>발송</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table>';
 
-  document.getElementById("result-info").textContent = total+"건 중 "+(start+1)+"–"+Math.min(start+pageSize,total)+" 표시" + (search?" (검색)":"");
+  // 묶음 부모 체크박스 indeterminate 처리
+  Object.keys(window.__batchIds).forEach(function(bid){
+    var cb=document.getElementById("bchk-"+bid); if(!cb) return;
+    var bids=window.__batchIds[bid];
+    var all=bids.every(function(id){return selected.has(id);});
+    var some=bids.some(function(id){return selected.has(id);});
+    cb.indeterminate = some && !all;
+  });
+
+  var orderCnt = list.length;
+  document.getElementById("result-info").textContent = total+"건(묶음 포함, 실주문 "+orderCnt+"건) 중 "+(start+1)+"–"+Math.min(start+pageSize,total)+" 표시" + (search?" (검색)":"");
   renderPager(pages);
   updateSelInfo();
+}
+
+/* 일/주/월 합계금액 — 현재 탭에 로드된 주문(allOrders) 기준 */
+function renderPeriodTotals(){
+  var el = document.getElementById("period-totals");
+  if(!el) return;
+  var src = (window.__fullOrders && window.__fullOrders.length) ? window.__fullOrders : allOrders;
+  var now = new Date();
+  var pad=function(n){return (n<10?"0":"")+n;};
+  var todayStr = now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate());
+  var monStr = now.getFullYear()+"-"+pad(now.getMonth()+1);
+  // 이번 주 월요일
+  var wd = (now.getDay()+6)%7; // 월=0
+  var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate()-wd);
+  var weekStart = mon.getFullYear()+"-"+pad(mon.getMonth()+1)+"-"+pad(mon.getDate());
+  var dSum=0, wSum=0, mSum=0, dCnt=0, wCnt=0, mCnt=0;
+  src.forEach(function(o){
+    var dt=kstDate(o.created_at); // YYYY-MM-DD (KST 변환)
+    var amt=Number(o.total_amount||0);
+    if(dt===todayStr){ dSum+=amt; dCnt++; }
+    if(dt>=weekStart){ wSum+=amt; wCnt++; }
+    if(dt.slice(0,7)===monStr){ mSum+=amt; mCnt++; }
+  });
+  el.innerHTML =
+     '<span class="pt-card"><b>오늘</b> <strong>'+won(dSum)+'</strong> <i>('+dCnt+'건)</i></span>'
+    +'<span class="pt-card"><b>이번 주</b> <strong>'+won(wSum)+'</strong> <i>('+wCnt+'건)</i></span>'
+    +'<span class="pt-card"><b>이번 달</b> <strong>'+won(mSum)+'</strong> <i>('+mCnt+'건)</i></span>';
 }
 
 function renderPager(pages){
@@ -275,6 +419,22 @@ function toggleSel(id, cb){ if(cb.checked) selected.add(id); else selected.delet
 function selectAllFiltered(){ filteredOrders().forEach(function(o){ selected.add(o.id); }); renderTable(); toast("검색결과 "+filteredOrders().length+"건 선택"); }
 function clearSel(){ selected.clear(); renderTable(); }
 function updateSelInfo(){ document.getElementById("sel-info").textContent = "선택 "+selected.size+"건"; }
+
+/* 입금/발송 토글 → 단일 status로 매핑 */
+function findOrder(id){
+  var a=allOrders||[]; for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; }
+  var f=window.__fullOrders||[]; for(var j=0;j<f.length;j++){ if(f[j].id===id) return f[j]; }
+  return null;
+}
+function setPay(id, v){
+  var o=findOrder(id); var cur=o?o.status:"신규";
+  var ns = (v==="완료") ? (cur==="발송완료"?"발송완료":"입금확인") : "신규";
+  setStatus(id, ns);
+}
+function setShip(id, v){
+  var ns = (v==="완료") ? "발송완료" : "입금확인";
+  setStatus(id, ns);
+}
 
 /* 상태 변경 */
 function setStatus(id, status){

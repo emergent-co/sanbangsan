@@ -8,7 +8,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #fff; max-width: 480px; margin: 0 auto; }
 
-.notice-bar { background: #fff3cd; border-bottom: 1px solid #ffe082; padding: 8px 16px; font-size: 12px; color: #7a5a10; text-align: center; }
+.notice-bar { background: #fff8f0; border-bottom: 1px solid #f0d9b5; padding: 8px 16px; font-size: 12px; color: #7a5a35; text-align: center; }
 .hero { background: linear-gradient(160deg, #fff8f0, #fff3e0); padding: 28px 20px 20px; text-align: center; border-bottom: 1px solid #f0d9b5; }
 .brand-badge { display: inline-block; background: #e8581a; color: white; font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; letter-spacing: 0.5px; }
 .hero h1 { font-size: 22px; font-weight: 700; color: #2d1a00; line-height: 1.4; margin-bottom: 8px; }
@@ -155,13 +155,9 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 .turnstile-wrap{margin:14px 0;display:flex;justify-content:center;}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#2d1a00;color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;max-width:90%;text-align:center;}
 .toast.show{opacity:.96;}
-.action-grid{display:flex;justify-content:center;gap:20px;padding:20px 16px;flex-wrap:wrap;}
-.action-btn{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#7a5a35;text-decoration:none;cursor:pointer;background:none;border:none;width:62px;}
-.action-btn .ic{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;background:#fff;border:1px solid #eadfce;}
-.action-btn.kakao .ic{background:#fee500;border-color:#fee500;}
-.action-btn.insta .ic{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;}
-.action-btn.naver .ic{background:#03c75a;border-color:#03c75a;color:#fff;}
-.action-btn.disabled{opacity:.4;pointer-events:none;}
+.action-row{display:flex;justify-content:center;gap:8px;padding:18px 16px;flex-wrap:wrap;}
+.act{padding:10px 14px;border:1px solid #e0c9a0;border-radius:8px;background:#fff;color:#5a3e20;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;}
+.act.dim{color:#b09870;background:#f7f0e6;border-color:#eadfce;pointer-events:none;}
 .footer{font-size:11px;line-height:1.9;}
 .footer a.policy{color:#e8b87a;text-decoration:underline;font-size:12px;}
 .biz{color:#9a7a50;font-size:10px;margin-top:10px;line-height:1.7;}
@@ -178,8 +174,8 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 </head>
 <body>
 
-<div class="deadline-bar">⏰ 카라향 주문은 6/10(화) 마감입니다</div>
-<div class="notice-bar">🚚 전국 무료 배송 &nbsp;|&nbsp; 입금 확인 후 순차 발송</div>
+<div class="deadline-bar">카라향 주문은 6/10(화) 마감입니다</div>
+<div class="notice-bar">전국 무료 배송 &nbsp;|&nbsp; 입금 확인 후 순차 발송</div>
 
 <div class="hero">
   <div class="brand-badge">제주 직송</div>
@@ -195,15 +191,15 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 
   <!-- STEP 1 : 배송지 + 상품 -->
   <div class="step active" id="step-1">
-    <div class="step-q">📦 어디로 보낼까요?</div>
+    <div class="step-q">어디로 보낼까요?</div>
     <div class="step-help">한 곳만 보내면 그대로,<br>여러 집에 보내려면 <b>'받는 곳 추가'</b>를 누르세요.</div>
 
     <div id="dests"></div>
 
-    <button class="add-dest" onclick="addDest()">＋ 받는 곳 추가 (다른 주소로 보내기)</button>
+    <button class="add-dest" onclick="addDest()">받는 곳 추가 (다른 주소로 보내기)</button>
 
     <div class="grand"><span class="gl">전체 합계</span><span class="ga" id="grand-total">0원</span></div>
-    <div class="ship0">🚚 택배비 0원 (무료배송)</div>
+    <div class="ship0">택배비 0원 (무료배송)</div>
 
     <div class="nav-btns">
       <button class="btn-next" id="next-1" onclick="goStep(2)" disabled>다음 →</button>
@@ -212,7 +208,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 
   <!-- STEP 2 : 입금 + 확인 -->
   <div class="step" id="step-2">
-    <div class="step-q">💰 입금·확인</div>
+    <div class="step-q">입금·확인</div>
     <div class="step-help">입금자명은 한 번만 적으면 돼요.</div>
 
     <label class="input-label">입금자명 <span class="req">*</span></label>
@@ -234,11 +230,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
       </label>
     </div>
 
-    <label class="input-label">결제 방법</label>
-    <div class="pay-tabs">
-      <div class="pay-tab active">무통장입금<span class="pay-badge">계좌이체</span></div>
-      <div class="pay-tab disabled" id="pay-card">카드결제<span class="pay-badge">준비중</span></div>
-    </div>
+    <div style="font-size:13px;color:#5a3e20;font-weight:700;margin:8px 0 2px;">결제 방법: 무통장입금 <span style="color:#9a7a50;font-weight:400;">(카드결제 준비중)</span></div>
 
     <div class="bank-info">
       <div class="bank-title">입금 계좌 안내</div>
@@ -258,7 +250,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 
   <!-- 주문완료 -->
   <div class="success-msg" id="success-msg">
-    ✅ 주문이 접수되었어요!<br>
+    주문이 접수되었어요!<br>
     주문번호 <strong id="ok-id"></strong> · 배송지 <strong id="ok-count"></strong>곳<br>
     총 결제금액 <strong id="ok-total"></strong><br><br>
     <div style="background:#fff;border-radius:8px;padding:12px;text-align:left;color:#5a3e20;">
@@ -270,11 +262,11 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
   </div>
 </div>
 
-<div class="action-grid">
-  <button class="action-btn kakao" onclick="shareKakao()"><span class="ic">💬</span>카카오 공유</button>
-  <a class="action-btn insta" id="btn-insta" href="#" target="_blank" rel="noopener"><span class="ic">📷</span>인스타그램</a>
-  <a class="action-btn disabled" id="btn-kakao-ch" href="#"><span class="ic">💬</span>카카오 채널</a>
-  <a class="action-btn naver disabled" id="btn-naver" href="#"><span class="ic">🟢</span>네이버 톡톡</a>
+<div class="action-row">
+  <button class="act" onclick="shareKakao()">카카오톡 공유</button>
+  <a class="act" id="btn-insta" href="#" target="_blank" rel="noopener">인스타그램</a>
+  <a class="act dim" id="btn-kakao-ch" href="#">카카오 채널 (준비중)</a>
+  <a class="act dim" id="btn-naver" href="#">네이버 톡톡 (준비중)</a>
 </div>
 
 <div class="footer">
@@ -338,7 +330,7 @@ function renderDests(){
     var prods=["A","B"].map(function(g){
       var btns=WEIGHTS.map(function(w){
         return '<button class="w-btn" id="wb-'+di+'-'+g+'-'+w+'" onclick="addItem('+di+',\''+g+'\',\''+w+'\')">'
-          +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g][w])+'</span><span class="w-add">＋ 담기</span></button>';
+          +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g][w])+'</span><span class="w-add">담기</span></button>';
       }).join("");
       return '<div class="dp-item" data-g="'+g+'">'
         +'<img class="dp-img" alt="'+PRICES[g].name+'" src="'+PIMG[g]+'" onerror="this.style.display=\'none\'">'
@@ -350,16 +342,16 @@ function renderDests(){
       ? '<div class="dest-cart-empty">위에서 무게를 눌러 담아주세요.</div>'
       : d.items.map(function(it,ii){
           return '<div class="dci"><span class="n">'+it.name+' '+it.weight+'</span>'
-            +'<span class="q"><button onclick="chItem('+di+','+ii+',-1)">−</button><b>'+it.qty+'</b><button onclick="chItem('+di+','+ii+',1)">＋</button></span>'
+            +'<span class="q"><button onclick="chItem('+di+','+ii+',-1)">−</button><b>'+it.qty+'</b><button onclick="chItem('+di+','+ii+',1)">+</button></span>'
             +'<span class="a">'+won(it.unit*it.qty)+'</span></div>';
         }).join("");
     var delBtn = dests.length>1 ? '<button class="del" onclick="removeDest('+di+')">삭제</button>' : '';
     return '<div class="dest-card">'
-      +'<div class="dest-head"><span class="t">🍊 배송지 '+(di+1)+' · 상품 선택</span>'+delBtn+'</div>'
+      +'<div class="dest-head"><span class="t">배송지 '+(di+1)+' · 상품 선택</span>'+delBtn+'</div>'
       +'<div class="dp-block">'+prods+'</div>'
       +'<div class="dest-cart">'+cart+'</div>'
       +'<div class="dest-sub"><span>이 배송지 합계</span><b>'+won(destTotal(d))+'</b></div>'
-      +'<div class="dest-recv">📮 받는 곳 정보</div>'
+      +'<div class="dest-recv">받는 곳 정보</div>'
       +'<label class="input-label">받는분 성함 <span class="req">*</span></label>'
       +'<input class="big-input" type="text" value="'+esc(d.name)+'" placeholder="홍길동" oninput="setF('+di+',\'name\',this.value)">'
       +'<label class="input-label">연락처 <span class="req">*</span></label>'
@@ -413,7 +405,7 @@ function goStep(n){
 function renderSummary(){
   var html=dests.map(function(d,di){
     var lines=d.items.map(function(it){return it.name+" "+it.weight+" × "+it.qty+" = "+won(it.unit*it.qty);}).join("<br>");
-    return '<div class="sd"><b>📮 받는 곳 '+(di+1)+' · '+esc(d.name)+'</b> ('+esc(d.phone)+')<br>'
+    return '<div class="sd"><b>받는 곳 '+(di+1)+' · '+esc(d.name)+'</b> ('+esc(d.phone)+')<br>'
       +esc("("+d.zip+") "+d.addr+" "+d.detail)+'<br>'+lines+'<br><b>소계 '+won(destTotal(d))+'</b></div>';
   }).join("");
   html+='<div style="margin-top:10px;font-size:16px;"><b>전체 합계 '+won(grandTotal())+'</b> (택배비 0원)</div>';
@@ -433,7 +425,7 @@ function updateSubmit(){
 function openModal(id){ document.getElementById(id).classList.add("show"); }
 function closeModal(id){ document.getElementById(id).classList.remove("show"); }
 function tsHint(msg,color){ var el=document.getElementById("ts-hint"); if(el){ el.textContent=msg; if(color) el.style.color=color; } }
-function onTurnstile(t){ turnstileToken=t; tsHint("✓ 인증 완료","#2e7d32"); }
+function onTurnstile(t){ turnstileToken=t; tsHint("인증 완료","#2e7d32"); }
 
 function submitOrder(){
   if(!document.getElementById("agree-privacy").checked){ alert("주문을 위해 개인정보 수집·이용 동의가 필요합니다."); return; }
@@ -477,10 +469,9 @@ function shareKakao(){
 (function init(){
   if(!CONFIG.TURNSTILE_SITEKEY){ document.querySelector(".turnstile-wrap").style.display="none"; }
   var insta=document.getElementById("btn-insta");
-  if(CONFIG.INSTAGRAM_URL){ insta.href=CONFIG.INSTAGRAM_URL; } else { insta.classList.add("disabled"); }
-  if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("disabled");k.innerHTML='<span class="ic">💬</span>카카오 채널'; }
-  if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("disabled");nv.innerHTML='<span class="ic">🟢</span>네이버 톡톡'; }
-  document.getElementById("pay-card").addEventListener("click",function(){toast("카드결제 준비중입니다.");});
+  if(CONFIG.INSTAGRAM_URL){ insta.href=CONFIG.INSTAGRAM_URL; } else { insta.classList.add("dim"); }
+  if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("dim");k.innerHTML="카카오 채널"; }
+  if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("dim");nv.innerHTML="네이버 톡톡"; }
   document.getElementById("bank-acct").textContent=CONFIG.BANK_ACCT;
   renderDests();
 })();

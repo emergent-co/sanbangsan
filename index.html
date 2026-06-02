@@ -98,6 +98,11 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 .btn-search{flex-shrink:0;padding:0 16px;background:#fff3e0;color:#a05c10;border:1.5px solid #e8b87a;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;}
 .dp-block{margin-top:6px;}
 .dp-name{font-size:13px;font-weight:800;color:#2d1a00;margin:8px 0 6px;}
+.dp-item{margin-top:16px;}
+.dp-img{width:100%;height:200px;object-fit:cover;border-radius:12px;background:#fff6ec;display:block;margin-bottom:8px;}
+.dp-item[data-g="A"] .dp-img{object-position:center 40%;}
+.dp-item[data-g="B"] .dp-img{object-position:center 70%;}
+.dp-desc{font-size:12px;color:#7a5a35;line-height:1.5;margin:0 0 10px;}
 .w-btns{display:flex;gap:8px;margin-bottom:6px;}
 .w-btn{position:relative;flex:1;border:1.5px solid #eadfce;background:#fff;border-radius:12px;padding:10px 4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .08s ease,background .15s,border-color .15s;-webkit-tap-highlight-color:transparent;}
 .w-btn:active{transform:scale(.93);background:#fff6ec;}
@@ -178,27 +183,6 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
   <h1><span class="small">'부(父)업하는 아빠'가 소개하는</span>산방산 농수산<br>고당도 제주감귤</h1>
   <p>제주 산방산 자락에서 직접 키운<br>달콤한 카라향을 산지 직송으로 보내드려요</p>
 </div>
-
-<!-- 품목 소개 (보기용) -->
-<div class="showcase">
-  <div class="prod-card">
-    <img class="fruit-img" src="img/karahyang.jpg" onerror="this.style.opacity=0.0" alt="카라향 정품 소과">
-    <div class="prod-body">
-      <div class="prod-name">카라향 정품 소과</div>
-      <div class="prod-desc">씨가 거의 없어요! 껍질이 얇고 과즙이 풍부한 고당도 정품입니다.</div>
-      <div class="mini-price"><span>3kg 35,000원</span><span>5kg 49,000원</span><span>10kg 79,000원</span></div>
-    </div>
-  </div>
-  <div class="prod-card">
-    <img class="fruit-img" src="img/ugly.jpg" onerror="this.style.opacity=0.0" alt="못난이 카라향">
-    <div class="prod-body">
-      <div class="prod-name">못난이 카라향</div>
-      <div class="prod-desc">씨가 있고 달콤·새콤해요. 겉모양은 못나도 맛은 그대로인 알뜰 상품!</div>
-      <div class="mini-price"><span>3kg 25,000원</span><span>5kg 38,000원</span><span>10kg 58,000원</span></div>
-    </div>
-  </div>
-</div>
-
 
 <div class="wizard">
   <div class="steps">
@@ -332,6 +316,8 @@ var PRICES = {
   B: { name:"못난이 카라향",     "3kg":25000, "5kg":38000, "10kg":58000 }
 };
 var WEIGHTS=["3kg","5kg","10kg"];
+var PDESC={A:"씨가 거의 없어요! 껍질이 얇고 과즙이 풍부한 고당도 정품입니다.",B:"씨가 있고 달콤·새콤해요. 겉모양은 못나도 맛은 그대로인 알뜰 상품!"};
+var PIMG={A:"img/karahyang.jpg",B:"img/ugly.jpg"};
 var turnstileToken="";
 
 function blankDest(){ return {name:"",phone:"",zip:"",addr:"",detail:"",req:"",items:[]}; }
@@ -351,7 +337,11 @@ function renderDests(){
         return '<button class="w-btn" id="wb-'+di+'-'+g+'-'+w+'" onclick="addItem('+di+',\''+g+'\',\''+w+'\')">'
           +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g][w])+'</span><span class="w-add">＋ 담기</span></button>';
       }).join("");
-      return '<div class="dp-name">'+PRICES[g].name+'</div><div class="w-btns">'+btns+'</div>';
+      return '<div class="dp-item" data-g="'+g+'">'
+        +'<img class="dp-img" alt="'+PRICES[g].name+'" src="'+PIMG[g]+'" onerror="this.style.display=\'none\'">'
+        +'<div class="dp-name">'+PRICES[g].name+'</div>'
+        +'<div class="dp-desc">'+PDESC[g]+'</div>'
+        +'<div class="w-btns">'+btns+'</div></div>';
     }).join("");
     var cart = d.items.length===0
       ? '<div class="dest-cart-empty">위에서 무게를 눌러 담아주세요.</div>'

@@ -67,7 +67,7 @@ tbody tr:hover{background:#fffaf2;}
 <body>
 <div class="top">
   <h1>산방산 농수산 — 주문 관리</h1>
-  <div class="sub">관리자 전용 · Cloudflare Access 보호 영역</div>
+  <div class="sub">관리자 전용 · 비밀번호 보호 영역</div>
 </div>
 
 <div class="tabs" id="tabs">
@@ -114,6 +114,19 @@ tbody tr:hover{background:#fffaf2;}
   </div>
 </div>
 
+<div class="modal-bg" id="gate">
+  <div class="modal-box" style="max-width:340px;">
+    <h3>관리자 비밀번호</h3>
+    <p id="gate-msg" style="font-size:12px;color:#c0392b;min-height:16px;margin-bottom:8px;"></p>
+    <input id="gate-input" type="password" autocomplete="current-password"
+      style="width:100%;padding:11px 12px;border:1px solid #e0c9a0;border-radius:8px;font-size:15px;outline:none;"
+      placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter'){submitGate();}">
+    <div class="modal-foot">
+      <button class="btn btn-dark" onclick="submitGate()">확인</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -122,6 +135,21 @@ var CONFIG = {
   API_BASE: "/api/admin",
   OWNER_PHONE: "010-6553-5371"
 };
+
+/* ===== 관리자 비밀번호 (브라우저에 기억) ===== */
+var ADMINKEY = (window.localStorage ? (localStorage.getItem("sb_admin_key")||"") : "");
+function setKey(k){ ADMINKEY=k; try{ localStorage.setItem("sb_admin_key", k); }catch(e){} }
+function clearKey(){ ADMINKEY=""; try{ localStorage.removeItem("sb_admin_key"); }catch(e){} }
+function adminFetch(url, opts){
+  opts = opts || {}; opts.headers = opts.headers || {};
+  opts.headers["X-Admin-Key"] = ADMINKEY;
+  if(!opts.headers["accept"]) opts.headers["accept"] = "application/json";
+  return fetch(url, opts);
+}
+function showGate(msg){ document.getElementById("gate-msg").textContent = msg||""; document.getElementById("gate").classList.add("show"); setTimeout(function(){document.getElementById("gate-input").focus();},50); }
+function hideGate(){ document.getElementById("gate").classList.remove("show"); }
+function submitGate(){ var v=document.getElementById("gate-input").value; if(!v) return; setKey(v); document.getElementById("gate-input").value=""; hideGate(); loadOrders(); }
+function startAdmin(){ if(!ADMINKEY){ showGate(""); return; } loadOrders(); }
 
 var allOrders = [];   // 현재 상태탭의 전체 주문(검색 전)
 var curTab = "신규";
@@ -149,14 +177,14 @@ function loadOrders(){
   var q = curTab === "전체" ? "?limit=500" : ("?status=" + encodeURIComponent(curTab) + "&limit=500");
   document.getElementById("tablewrap").innerHTML = '<div class="loading">불러오는 중…</div>';
   document.getElementById("pager").innerHTML = "";
-  fetch(CONFIG.API_BASE + "/orders" + q, { headers:{ "accept":"application/json" } })
-    .then(function(r){ if(r.status===401){ throw new Error("인증이 필요합니다. Cloudflare Access 로그인 후 이용하세요."); } return r.json(); })
+  adminFetch(CONFIG.API_BASE + "/orders" + q)
+    .then(function(r){ if(r.status===401){ clearKey(); showGate("비밀번호가 올바르지 않습니다. 다시 입력해 주세요."); throw new Error("__gate__"); } return r.json(); })
     .then(function(res){ if(!res.ok){ throw new Error(res.error || "조회 실패"); } allOrders = res.orders || []; renderTable(); updateCounts(); })
-    .catch(function(e){ document.getElementById("tablewrap").innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; });
+    .catch(function(e){ if(e.message==="__gate__") return; document.getElementById("tablewrap").innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; });
 }
 
 function updateCounts(){
-  fetch(CONFIG.API_BASE + "/orders?limit=500", { headers:{ "accept":"application/json" } })
+  adminFetch(CONFIG.API_BASE + "/orders?limit=500")
     .then(function(r){return r.ok?r.json():{ok:false};})
     .then(function(res){ if(!res.ok) return;
       var c={ "신규":0,"입금확인":0,"발송완료":0,"전체":res.orders.length };
@@ -250,7 +278,7 @@ function updateSelInfo(){ document.getElementById("sel-info").textContent = "선
 
 /* 상태 변경 */
 function setStatus(id, status){
-  fetch(CONFIG.API_BASE + "/orders/" + id, { method:"PATCH", headers:{"content-type":"application/json"}, body:JSON.stringify({status:status}) })
+  adminFetch(CONFIG.API_BASE + "/orders/" + id, { method:"PATCH", headers:{"content-type":"application/json"}, body:JSON.stringify({status:status}) })
     .then(function(r){return r.json();}).then(function(res){
       if(res.ok){ toast("#"+id+" → "+status); loadOrders(); } else { toast(res.error || "변경 실패"); }
     }).catch(function(){ toast("네트워크 오류"); });
@@ -279,7 +307,7 @@ function copySelected(){ var text = buildSmsText(); if(!text){ toast("선택된 
 
 /* 마케팅 동의자 추출 (전체 기준) */
 function extractMarketing(){
-  fetch(CONFIG.API_BASE + "/orders?limit=500", { headers:{ "accept":"application/json" } })
+  adminFetch(CONFIG.API_BASE + "/orders?limit=500")
     .then(function(r){return r.json();}).then(function(res){
       if(!res.ok){ toast("조회 실패"); return; }
       var seen={}, lines=[];
@@ -295,7 +323,7 @@ function closeModal(id){ document.getElementById(id).classList.remove("show"); }
 function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){toast("복사됨");},function(){fb(t);}); } else { fb(t); } }
 function fb(t){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");toast("복사됨");}catch(e){toast("복사 실패");} document.body.removeChild(ta); }
 
-loadOrders();
+startAdmin();
 </script>
 </body>
 </html>

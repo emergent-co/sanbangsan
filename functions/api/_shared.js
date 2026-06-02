@@ -34,22 +34,14 @@ export async function verifyTurnstile(token, secret, ip) {
   return { success: !!out.success, reason: (out["error-codes"] || []).join(",") };
 }
 
-// --- Cloudflare Access JWT 확인 (관리자 API 보호) ---
-// Access가 앞단에서 인증을 강제하지만, Worker단에서도 헤더 존재 + (선택)이메일 일치를 재확인한다.
-// 헤더: Cf-Access-Jwt-Assertion / Cf-Access-Authenticated-User-Email
-export function getAccessIdentity(request) {
-  const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
-  const email = request.headers.get("Cf-Access-Authenticated-User-Email");
-  return { jwt, email };
-}
-
-// 관리자 API 게이트: Access JWT가 없으면 차단.
-// ADMIN_EMAIL 환경변수가 설정돼 있으면 이메일 일치까지 확인(이중 안전장치).
+// --- 관리자 비밀번호 게이트 ---
+// 관리자 페이지(admin.html)가 X-Admin-Key 헤더로 비밀번호를 보내면, 서버 환경변수
+// ADMIN_KEY(Cloudflare Secret)와 일치할 때만 통과시킨다. (Cloudflare Access 불필요)
+// 비밀번호는 코드에 저장하지 않고 전부 Cloudflare Secret으로만 보관한다.
 export function requireAdmin(request, env) {
-  const { jwt, email } = getAccessIdentity(request);
-  if (!jwt) return unauthorized("Cloudflare Access 인증이 필요합니다.");
-  if (env.ADMIN_EMAIL && email && email.toLowerCase() !== env.ADMIN_EMAIL.toLowerCase()) {
-    return unauthorized("허용되지 않은 계정입니다.");
+  const key = request.headers.get("X-Admin-Key") || "";
+  if (!env.ADMIN_KEY || key.length === 0 || key !== env.ADMIN_KEY) {
+    return unauthorized("관리자 비밀번호가 필요합니다.");
   }
   return null; // 통과
 }

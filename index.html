@@ -155,9 +155,14 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 .turnstile-wrap{margin:14px 0;display:flex;justify-content:center;}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#2d1a00;color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;max-width:90%;text-align:center;}
 .toast.show{opacity:.96;}
-.action-row{display:flex;justify-content:center;gap:8px;padding:18px 16px;flex-wrap:wrap;}
-.act{padding:10px 14px;border:1px solid #e0c9a0;border-radius:8px;background:#fff;color:#5a3e20;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;}
-.act.dim{color:#b09870;background:#f7f0e6;border-color:#eadfce;pointer-events:none;}
+.action-row{display:flex;justify-content:center;gap:14px;padding:18px 16px;flex-wrap:wrap;}
+.ibtn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;text-decoration:none;}
+.ibtn svg{width:24px;height:24px;display:block;}
+.ibtn.share{background:#2d1a00;}
+.ibtn.kakao{background:#fee500;}
+.ibtn.insta{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);}
+.ibtn.naver{background:#03c75a;}
+.ibtn.dim{opacity:.4;pointer-events:none;}
 .footer{font-size:11px;line-height:1.9;}
 .footer a.policy{color:#e8b87a;text-decoration:underline;font-size:12px;}
 .biz{color:#9a7a50;font-size:10px;margin-top:10px;line-height:1.7;}
@@ -209,12 +214,10 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
   <!-- STEP 2 : 입금 + 확인 -->
   <div class="step" id="step-2">
     <div class="step-q">입금·확인</div>
-    <div class="step-help">입금자명은 한 번만 적으면 돼요.</div>
+    <div class="summary" id="order-summary"></div>
 
     <label class="input-label">입금자명 <span class="req">*</span></label>
     <input class="big-input" type="text" id="inp-depositor" placeholder="입금하실 분 성함" oninput="validStep2()">
-
-    <div class="summary" id="order-summary"></div>
 
     <div class="agree-box">
       <label class="agree-all"><input type="checkbox" id="agree-all" onchange="toggleAll(this)">전체 동의</label>
@@ -230,22 +233,12 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
       </label>
     </div>
 
-    <div style="font-size:13px;color:#5a3e20;font-weight:700;margin:8px 0 2px;">결제 방법: 무통장입금 <span style="color:#9a7a50;font-weight:400;">(카드결제 준비중)</span></div>
-
-    <div class="bank-info">
-      <div class="bank-title">입금 계좌 안내</div>
-      <div class="bank-row"><span class="bank-key">은행</span><span class="bank-val">하나은행</span></div>
-      <div class="bank-row"><span class="bank-key">계좌번호</span><span class="bank-val bank-acct-line"><span id="bank-acct">115-910946-09507</span><button class="copy-mini" onclick="copyAcct()">복사</button></span></div>
-      <div class="bank-row"><span class="bank-key">예금주</span><span class="bank-val">이영현</span></div>
-      <div style="font-size:11px;color:#9a7a50;margin-top:10px;line-height:1.6;">입금 확인 후 순차 발송됩니다.<br>입금자명은 주문자명과 동일하게 부탁드립니다.</div>
-    </div>
-
-    <div class="turnstile-wrap"><div style="text-align:center;"><div class="cf-turnstile" data-sitekey="0x4AAAAAADdr7Us4sTQOae9M" data-callback="onTurnstile" data-theme="light"></div><div id="ts-hint" style="font-size:12px;color:#9a7a50;margin-top:6px;">봇 방지 인증을 완료해 주세요</div></div></div>
-
     <div class="nav-btns">
       <button class="btn-prev" onclick="goStep(1)">← 이전</button>
-      <button class="btn-next" id="submit-btn" onclick="submitOrder()" disabled>주문하기</button>
+      <button class="btn-next" id="submit-btn" onclick="submitOrder()" disabled>주문 및 계좌번호 확인</button>
     </div>
+
+    <div class="turnstile-wrap" style="margin-top:10px;"><div style="text-align:center;"><div class="cf-turnstile" data-sitekey="0x4AAAAAADdr7Us4sTQOae9M" data-callback="onTurnstile" data-theme="light" data-size="compact"></div><div id="ts-hint" style="font-size:11px;color:#b09870;margin-top:4px;">봇 방지 인증</div></div></div>
   </div>
 
   <!-- 주문완료 -->
@@ -263,10 +256,9 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 </div>
 
 <div class="action-row">
-  <button class="act" onclick="shareKakao()">카카오톡 공유</button>
-  <a class="act" id="btn-insta" href="#" target="_blank" rel="noopener">인스타그램</a>
-  <a class="act dim" id="btn-kakao-ch" href="#">카카오 채널 (준비중)</a>
-  <a class="act dim" id="btn-naver" href="#">네이버 톡톡 (준비중)</a>
+  <button class="ibtn share" onclick="shareLink()" title="링크 공유"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></button>
+  <a class="ibtn kakao dim" id="btn-kakao-ch" href="#" title="카카오 채널 (준비중)"><svg viewBox="0 0 24 24" fill="#3c1e1e"><path d="M12 3.5C6.8 3.5 2.5 6.9 2.5 11c0 2.6 1.7 4.9 4.4 6.2-.2.7-.7 2.5-.8 2.9-.1.5.2.5.4.4.2-.1 2.5-1.7 3.5-2.4.5.1 1.1.1 1.5.1 5.2 0 9.5-3.4 9.5-7.6S17.2 3.5 12 3.5z"/></svg></a>
+  <a class="ibtn naver dim" id="btn-naver" href="#" title="네이버 톡톡 (준비중)"><svg viewBox="0 0 24 24"><path d="M14.4 12.5 9.3 5.5H5.5v13h4.1v-7l5.1 7h3.8v-13h-4.1z" fill="#fff"/></svg></a>
 </div>
 
 <div class="footer">
@@ -355,7 +347,7 @@ function renderDests(){
       +'<label class="input-label">받는분 성함 <span class="req">*</span></label>'
       +'<input class="big-input" type="text" value="'+esc(d.name)+'" placeholder="홍길동" oninput="setF('+di+',\'name\',this.value)">'
       +'<label class="input-label">연락처 <span class="req">*</span></label>'
-      +'<input class="big-input" type="tel" value="'+esc(d.phone)+'" placeholder="010-0000-0000" oninput="setF('+di+',\'phone\',this.value)">'
+      +'<input class="big-input" type="tel" maxlength="13" value="'+esc(d.phone)+'" placeholder="010-0000-0000" oninput="fmtPhone(this,'+di+')">'
       +'<label class="input-label">주소 <span class="req">*</span></label>'
       +'<div class="addr-row"><input class="big-input" type="text" value="'+esc(d.zip)+'" placeholder="우편번호" readonly style="flex:1;"><button class="btn-search" onclick="openPostcode('+di+')">주소 검색</button></div>'
       +'<input class="big-input" type="text" value="'+esc(d.addr)+'" placeholder="기본주소" readonly>'
@@ -368,6 +360,14 @@ function renderDests(){
 }
 
 function setF(di,f,v){ dests[di][f]=v; if(f==="phone"||f==="name") validStep1(); }
+function fmtPhone(el,di){
+  var d=el.value.replace(/\D/g,'').slice(0,11), out;
+  if(d.length<4){ out=d; }
+  else if(d.length<8){ out = d.indexOf('02')===0 ? d.slice(0,2)+'-'+d.slice(2) : d.slice(0,3)+'-'+d.slice(3); }
+  else if(d.length<11){ var p=d.indexOf('02')===0?2:3; out=d.slice(0,p)+'-'+d.slice(p,d.length-4)+'-'+d.slice(d.length-4); }
+  else { out=d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7); }
+  el.value=out; dests[di].phone=out; validStep1();
+}
 function addItem(di,g,w){
   var d=dests[di], it=d.items.find(function(x){return x.group===g&&x.weight===w;});
   if(it){ it.qty++; } else { d.items.push({group:g,name:PRICES[g].name,weight:w,qty:1,unit:PRICES[g][w]}); }
@@ -398,6 +398,10 @@ function goStep(n){
   document.getElementById("step-2").classList.toggle("active",n===2);
   document.getElementById("dot-1").classList.toggle("active",n===1);
   document.getElementById("dot-2").classList.toggle("active",n===2);
+  var hideTop=(n===2);
+  document.querySelector(".hero").style.display=hideTop?"none":"";
+  document.querySelector(".deadline-bar").style.display=hideTop?"none":"";
+  document.querySelector(".notice-bar").style.display=hideTop?"none":"";
   if(n===2){ renderSummary(); }
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -454,10 +458,16 @@ function submitOrder(){
         document.getElementById("step-2").classList.remove("active");
         document.querySelector(".steps").style.display="none";
         var msg=document.getElementById("success-msg"); msg.style.display="block"; msg.scrollIntoView({behavior:"smooth"});
-      } else { alert(res.error||"주문 처리 중 오류가 발생했습니다."); btn.disabled=false; btn.textContent="주문하기"; if(window.turnstile){window.turnstile.reset();turnstileToken="";} }
-    }).catch(function(){ alert("네트워크 오류로 주문을 보내지 못했습니다."); btn.disabled=false; btn.textContent="주문하기"; });
+      } else { alert(res.error||"주문 처리 중 오류가 발생했습니다."); btn.disabled=false; btn.textContent="주문 및 계좌번호 확인"; if(window.turnstile){window.turnstile.reset();turnstileToken="";} }
+    }).catch(function(){ alert("네트워크 오류로 주문을 보내지 못했습니다."); btn.disabled=false; btn.textContent="주문 및 계좌번호 확인"; });
 }
 
+function shareLink(){
+  var url=location.origin + location.pathname;
+  if(navigator.share){ navigator.share({title:CONFIG.SHARE_TITLE, text:CONFIG.SHARE_DESC, url:url}).catch(function(){}); }
+  else if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){toast("링크가 복사됐어요");},function(){toast(url);}); }
+  else { toast(url); }
+}
 function shareKakao(){
   if(!CONFIG.KAKAO_JS_KEY){ toast("카카오 공유 준비중입니다."); return; }
   if(!window.Kakao.isInitialized()){ Kakao.init(CONFIG.KAKAO_JS_KEY); }
@@ -468,10 +478,8 @@ function shareKakao(){
 
 (function init(){
   if(!CONFIG.TURNSTILE_SITEKEY){ document.querySelector(".turnstile-wrap").style.display="none"; }
-  var insta=document.getElementById("btn-insta");
-  if(CONFIG.INSTAGRAM_URL){ insta.href=CONFIG.INSTAGRAM_URL; } else { insta.classList.add("dim"); }
-  if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("dim");k.innerHTML="카카오 채널"; }
-  if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("dim");nv.innerHTML="네이버 톡톡"; }
+  if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("dim"); }
+  if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("dim"); }
   document.getElementById("bank-acct").textContent=CONFIG.BANK_ACCT;
   renderDests();
 })();

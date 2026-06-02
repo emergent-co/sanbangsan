@@ -480,7 +480,6 @@ function shareKakao(){
   if(!CONFIG.TURNSTILE_SITEKEY){ document.querySelector(".turnstile-wrap").style.display="none"; }
   if(CONFIG.KAKAO_CHANNEL_URL){ var k=document.getElementById("btn-kakao-ch");k.href=CONFIG.KAKAO_CHANNEL_URL;k.target="_blank";k.classList.remove("dim"); }
   if(CONFIG.NAVER_TALK_URL){ var nv=document.getElementById("btn-naver");nv.href=CONFIG.NAVER_TALK_URL;nv.target="_blank";nv.classList.remove("dim"); }
-  document.getElementById("bank-acct").textContent=CONFIG.BANK_ACCT;
   renderDests();
 })();
 </script>

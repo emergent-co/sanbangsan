@@ -473,13 +473,16 @@ function setStatus(id, status){
 function buildSmsText(){
   var picked = allOrders.filter(function(o){return selected.has(o.id);});
   if(picked.length===0){ return null; }
-  return picked.map(function(o){
+  var body = picked.map(function(o){
     var items=[]; try{items=JSON.parse(o.items_json);}catch(e){}
     var first = items[0] ? (items[0].name+" "+items[0].weight+" x"+items[0].qty) : "";
     var more = items.length>1 ? " 외 "+(items.length-1)+"건" : "";
     return "[산방산 주문 #"+o.id+"]\n"+o.name+" / "+o.phone+"\n"+(o.address||"")+" "+(o.address_detail||"")+"\n"
-      +first+more+" 합계 "+Number(o.total_amount).toLocaleString("ko-KR")+"원\n입금자: "+o.depositor_name;
+      +first+more;
   }).join("\n\n");
+  var sum = picked.reduce(function(a,o){return a+Number(o.total_amount||0);},0);
+  var net = Math.round(sum/1.1);
+  return body + "\n\n금번주문 "+picked.length+"건 입금 "+net.toLocaleString("ko-KR")+"원";
 }
 function smsSelected(){
   var text = buildSmsText(); if(!text){ toast("선택된 주문이 없습니다."); return; }

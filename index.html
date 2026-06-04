@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>하랑이 아빠가 소개하는 산방산 농수산 고당도 제주감귤</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="하랑이 아빠가 소개하는 산방산 농수산 고당도 제주감귤">
+<meta property="og:description" content="제주 산방산 자락 고당도 카라향! 택배비 무료, 산지 직송. 카라향 6/10 마감!">
+<meta property="og:image" content="https://shop.cellab.kr/img/karahyang.jpg">
+<meta property="og:url" content="https://shop.cellab.kr/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #fff; max-width: 480px; margin: 0 auto; }
@@ -296,7 +302,7 @@ var CONFIG = {
   API_BASE: "/api",
   TURNSTILE_SITEKEY: "0x4AAAAAADdr7Us4sTQOae9M",
   KAKAO_JS_KEY: "",
-  INSTAGRAM_URL: "https://instagram.com/father.job",
+  INSTAGRAM_URL: "https://instagram.com/hr.dad.log",
   KAKAO_CHANNEL_URL: "",
   NAVER_TALK_URL: "",
   SHARE_TITLE: "하랑이 아빠가 소개하는 산방산 농수산 고당도 제주감귤",
@@ -477,7 +483,7 @@ function shareKakao(){
   if(!CONFIG.KAKAO_JS_KEY){ toast("카카오 공유 준비중입니다."); return; }
   if(!window.Kakao.isInitialized()){ Kakao.init(CONFIG.KAKAO_JS_KEY); }
   Kakao.Share.sendDefault({ objectType:"feed",
-    content:{ title:CONFIG.SHARE_TITLE, description:CONFIG.SHARE_DESC, imageUrl:location.origin+"/og.jpg", link:{mobileWebUrl:location.href,webUrl:location.href} },
+    content:{ title:CONFIG.SHARE_TITLE, description:CONFIG.SHARE_DESC, imageUrl:location.origin+"/img/karahyang.jpg", link:{mobileWebUrl:location.href,webUrl:location.href} },
     buttons:[{title:"주문하러 가기", link:{mobileWebUrl:location.href,webUrl:location.href}}] });
 }
 

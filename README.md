@@ -40,7 +40,7 @@ sanbangsan/
 | Cloudflare Secret | `ADMIN_EMAIL` | `emgt.yhlee@gmail.com` (관리자 API 이중확인) |
 | Cloudflare Secret | `SOLAPI_API_KEY` 등 | (2단계 자동문자 도입 시) |
 
-> 인스타그램 `https://instagram.com/father.job`, 사장님 문자번호 `010-6553-5371`(admin.html CONFIG), 입금계좌 `하나은행 115-910946-09507 이영현` 은 이미 반영됨.
+> 인스타그램 `https://instagram.com/hr.dad.log`, 사장님 문자번호 `010-6323-8851`(admin.html CONFIG), 입금계좌 `하나은행 115-910946-09507 이영현` 은 이미 반영됨.
 
 ---
 

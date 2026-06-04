@@ -43,6 +43,8 @@ tbody tr:hover{background:#fffaf2;}
 .mini{background:#2d1a00;color:#fff;border:none;border-radius:4px;padding:1px 5px;font-size:10px;cursor:pointer;margin-left:3px;}
 .del{background:#fdecea;color:#c0392b;border:1px solid #f5c6c2;border-radius:4px;padding:0 5px;font-size:11px;line-height:1.5;cursor:pointer;margin-left:5px;}
 .del:hover{background:#f8d7d4;}
+.btn-del{background:#fdecea;color:#c0392b;border:1px solid #f5c6c2;}
+.btn-del:hover{background:#f8d7d4;}
 .status-pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
 .s-신규{background:#fff3e0;color:#a05c10;}
 .s-입금확인{background:#e3f2fd;color:#1565c0;}
@@ -108,6 +110,7 @@ tbody tr:hover{background:#fffaf2;}
 <div class="bar2">
   <button class="btn btn-ghost" onclick="selectAllFiltered()">검색결과 전체선택</button>
   <button class="btn btn-ghost" onclick="clearSel()">선택해제</button>
+  <button class="btn btn-del" id="btn-del-sel" onclick="deleteSelected()" style="display:none;">선택 삭제</button>
   <button class="btn btn-mkt" onclick="extractMarketing()">마케팅 동의자 추출</button>
   <span id="result-info"></span>
 </div>
@@ -260,8 +263,7 @@ function singleRow(o, childBid){
   var addrFull = (o.zipcode?"("+o.zipcode+") ":"")+(o.address||"")+" "+(o.address_detail||"");
   var items = itemsSummary(o);
   var trAttr = childBid ? (' data-br="'+childBid+'" class="batch-child"'+(openBatches.has(childBid)?"":' style="display:none"')) : "";
-  var delBtn = '<button class="del" onclick="deleteOrder('+o.id+')" title="주문 삭제">✕</button>';
-  var idCell = childBid ? '<td class="c-id">↳ #'+o.id+delBtn+'</td>' : '<td class="c-id">#'+o.id+delBtn+'</td>';
+  var idCell = childBid ? '<td class="c-id">↳ #'+o.id+'</td>' : '<td class="c-id">#'+o.id+'</td>';
   var chkHandler = childBid ? "toggleSelSync" : "toggleSel";
   return '<tr'+trAttr+'>'
     +'<td><input class="chk" type="checkbox" '+(selected.has(o.id)?"checked":"")+' onchange="'+chkHandler+'('+o.id+',this)"></td>'
@@ -313,7 +315,7 @@ function batchRows(u){
   var mkt = anyMkt ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
   var parent = '<tr class="batch-parent">'
     +'<td><input class="chk" type="checkbox" id="bchk-'+bid+'" '+(allSel?"checked":"")+' onchange="toggleBatchSel(\''+bid+'\',this)"></td>'
-    +'<td class="c-id"><button class="batch-toggle" onclick="toggleBatch(\''+bid+'\')">'+(open?"▼":"▶")+'</button>#'+orders[0].id+' <span class="batch-badge">묶음 '+orders.length+'곳</span><button class="del" onclick="deleteBatch(\''+bid+'\')" title="묶음 전체 삭제">✕</button></td>'
+    +'<td class="c-id"><button class="batch-toggle" onclick="toggleBatch(\''+bid+'\')">'+(open?"▼":"▶")+'</button>#'+orders[0].id+' <span class="batch-badge">묶음 '+orders.length+'곳</span></td>'
     +'<td class="c-time">'+esc(t)+'</td>'
     +'<td>'+esc(dnames.join(", "))+'</td>'
     +'<td>'+esc(phone)+'</td>'
@@ -425,7 +427,19 @@ function goPage(p){ page=p; renderTable(); window.scrollTo({top:0,behavior:"smoo
 function toggleSel(id, cb){ if(cb.checked) selected.add(id); else selected.delete(id); updateSelInfo(); }
 function selectAllFiltered(){ filteredOrders().forEach(function(o){ selected.add(o.id); }); renderTable(); toast("검색결과 "+filteredOrders().length+"건 선택"); }
 function clearSel(){ selected.clear(); renderTable(); }
-function updateSelInfo(){ document.getElementById("sel-info").textContent = "선택 "+selected.size+"건"; }
+function updateSelInfo(){
+  document.getElementById("sel-info").textContent = "선택 "+selected.size+"건";
+  var db=document.getElementById("btn-del-sel"); if(db) db.style.display = selected.size>0 ? "" : "none";
+}
+function deleteSelected(){
+  var ids = Array.from(selected);
+  if(ids.length===0){ toast("선택된 주문이 없습니다."); return; }
+  if(!confirm("선택한 "+ids.length+"건을 삭제할까요? 되돌릴 수 없습니다.")) return;
+  Promise.all(ids.map(function(id){
+    return adminFetch(CONFIG.API_BASE + "/orders/" + id, { method:"DELETE" }).then(function(r){return r.json();});
+  })).then(function(){ toast(ids.length+"건 삭제됨"); selected.clear(); loadOrders(); })
+     .catch(function(){ toast("삭제 중 오류"); loadOrders(); });
+}
 
 /* 입금/발송 토글 → 단일 status로 매핑 */
 function findOrder(id){

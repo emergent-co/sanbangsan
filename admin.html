@@ -29,9 +29,14 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5e
 .pt-card span,.pt-card{white-space:nowrap;}
 .pt-card .c-total,.pt-card strong{color:#e8581a;}
 .pt-card i{color:#9a7a50;font-style:normal;font-size:11px;}
+.pt-profit{background:#eef7ee;border-color:#bcdcbc;}
+.pt-profit b{color:#2e7d32;}
+.pt-profit strong{color:#2e7d32;}
 .tablewrap{overflow-x:auto;padding:0 2px;}
 table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;min-width:960px;}
 thead th{background:#fbf4ea;color:#7a5a35;font-weight:700;font-size:11px;text-align:left;padding:6px 5px;border-bottom:2px solid #e8ddc8;white-space:nowrap;position:sticky;top:0;}
+thead th.sortable{cursor:pointer;user-select:none;}
+thead th.sortable:hover{color:#e8581a;}
 tbody td{padding:6px 5px;border-bottom:1px solid #f0e8da;color:#3f2c14;vertical-align:top;}
 tbody tr:hover{background:#fffaf2;}
 .c-id{font-weight:800;color:#e8581a;white-space:nowrap;}
@@ -111,7 +116,6 @@ tbody tr:hover{background:#fffaf2;}
   <button class="btn btn-ghost" onclick="selectAllFiltered()">검색결과 전체선택</button>
   <button class="btn btn-ghost" onclick="clearSel()">선택해제</button>
   <button class="btn btn-del" id="btn-del-sel" onclick="deleteSelected()" style="display:none;">선택 삭제</button>
-  <button class="btn btn-mkt" onclick="extractMarketing()">마케팅 동의자 추출</button>
   <span id="result-info"></span>
 </div>
 
@@ -179,6 +183,7 @@ var pageSize = 20;
 var page = 1;
 var selected = new Set();
 var openBatches = new Set();   // 펼쳐진 묶음 batch_id
+var sortKey = "time", sortDir = "desc";   // 정렬 기준/방향
 
 function won(n){ return Number(n).toLocaleString("ko-KR") + "원"; }
 function kstDate(s){
@@ -190,6 +195,16 @@ function kstDate(s){
   var k = new Date(d.getTime()+9*3600*1000);
   var p=function(n){return (n<10?"0":"")+n;};
   return k.getUTCFullYear()+"-"+p(k.getUTCMonth()+1)+"-"+p(k.getUTCDate());
+}
+function kstDT(s){
+  if(!s) return "";
+  var iso = s.indexOf("T")>=0 ? s : s.replace(" ","T");
+  if(iso.indexOf("Z")<0 && iso.indexOf("+")<0) iso += "Z";
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return (s||"").slice(5,16);
+  var k = new Date(d.getTime()+9*3600*1000);
+  var p=function(n){return (n<10?"0":"")+n;};
+  return p(k.getUTCMonth()+1)+"-"+p(k.getUTCDate())+" "+p(k.getUTCHours())+":"+p(k.getUTCMinutes());
 }
 function esc(s){ return (s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 function jsstr(s){ return (s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "); }
@@ -257,8 +272,7 @@ function buildUnits(list){
 
 /* 단건(또는 묶음 자식) 한 줄 */
 function singleRow(o, childBid){
-  var t = (o.created_at||"").replace("T"," ").replace("Z","");
-  if(t.length>=16) t = t.slice(5,16);
+  var t = kstDT(o.created_at);
   var mkt = o.agree_marketing==1 ? '<span class="mkt-badge mkt-o">O</span>' : '<span class="mkt-badge mkt-x">X</span>';
   var addrFull = (o.zipcode?"("+o.zipcode+") ":"")+(o.address||"")+" "+(o.address_detail||"");
   var items = itemsSummary(o);
@@ -307,8 +321,7 @@ function batchRows(u){
   var dep = orders[0].depositor_name;
   var phone = orders[0].phone;
   var dnames=[]; orders.forEach(function(o){ if(dnames.indexOf(o.name)===-1) dnames.push(o.name); });
-  var t = (orders[0].created_at||"").replace("T"," ").replace("Z","");
-  if(t.length>=16) t = t.slice(5,16);
+  var t = kstDT(orders[0].created_at);
   var open = openBatches.has(bid);
   var allSel = ids.every(function(id){return selected.has(id);});
   var anyMkt = orders.some(function(o){return o.agree_marketing==1;});
@@ -342,6 +355,25 @@ function toggleBatchSel(bid, cb){
 }
 function toggleSelSync(id, cb){ if(cb.checked) selected.add(id); else selected.delete(id); renderTable(); }
 
+function th(key,label){
+  var ar = sortKey===key ? (sortDir==='asc'?' ▲':' ▼') : '';
+  return '<th class="sortable" onclick="setSort(\''+key+'\')">'+label+ar+'</th>';
+}
+function sortVal(u, key){
+  var os=u.orders;
+  if(key==='id')   return Math.min.apply(null, os.map(function(o){return o.id;}));
+  if(key==='time') return os[0].created_at||'';
+  if(key==='pay')  return os.every(function(o){return o.status==='입금확인'||o.status==='발송완료';})?1:0;
+  if(key==='mkt')  return os.some(function(o){return o.agree_marketing==1;})?1:0;
+  if(key==='ship') return os.every(function(o){return o.status==='발송완료';})?1:0;
+  return 0;
+}
+function setSort(key){
+  if(sortKey===key){ sortDir = sortDir==='asc'?'desc':'asc'; }
+  else { sortKey=key; sortDir=(key==='time'||key==='id')?'desc':'asc'; }
+  renderTable();
+}
+
 function renderTable(){
   window.__batchIds = {};
   var list = filteredOrders();
@@ -349,6 +381,10 @@ function renderTable(){
   // 탭 필터(묶음 단위): 하위 주문 중 하나라도 해당 상태면 그 묶음 전체를 표시
   if(curTab !== "전체"){
     units = units.filter(function(u){ return u.orders.some(function(o){return o.status===curTab;}); });
+  }
+  if(sortKey){
+    var sdir = sortDir==='asc'?1:-1;
+    units.sort(function(a,b){ var x=sortVal(a,sortKey), y=sortVal(b,sortKey); if(x<y)return -sdir; if(x>y)return sdir; return 0; });
   }
   var total = units.length;
   var pages = Math.max(1, Math.ceil(total / pageSize));
@@ -366,7 +402,9 @@ function renderTable(){
   }).join("");
 
   wrap.innerHTML = '<table><thead><tr>'
-    +'<th></th><th>주문#</th><th>시각</th><th>받는분</th><th>연락처</th><th>주소</th><th>품목</th><th>합계</th><th>입금</th><th>입금자</th><th>광고</th><th>발송</th>'
+    +'<th></th>'+th('id','주문#')+th('time','시각')
+    +'<th>받는분</th><th>연락처</th><th>주소</th><th>품목</th><th>합계</th>'
+    +th('pay','입금')+'<th>입금자</th>'+th('mkt','광고')+th('ship','발송')
     +'</tr></thead><tbody>'+rows+'</tbody></table>';
 
   // 묶음 부모 체크박스 indeterminate 처리
@@ -397,10 +435,11 @@ function renderPeriodTotals(){
   var wd = (now.getDay()+6)%7; // 월=0
   var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate()-wd);
   var weekStart = mon.getFullYear()+"-"+pad(mon.getMonth()+1)+"-"+pad(mon.getDate());
-  var dSum=0, wSum=0, mSum=0, dCnt=0, wCnt=0, mCnt=0;
+  var dSum=0, wSum=0, mSum=0, aSum=0, dCnt=0, wCnt=0, mCnt=0, aCnt=0;
   src.forEach(function(o){
     var dt=kstDate(o.created_at); // YYYY-MM-DD (KST 변환)
     var amt=Number(o.total_amount||0);
+    aSum+=amt; aCnt++;
     if(dt===todayStr){ dSum+=amt; dCnt++; }
     if(dt>=weekStart){ wSum+=amt; wCnt++; }
     if(dt.slice(0,7)===monStr){ mSum+=amt; mCnt++; }
@@ -408,7 +447,10 @@ function renderPeriodTotals(){
   el.innerHTML =
      '<span class="pt-card"><b>오늘</b> <strong>'+won(dSum)+'</strong> <i>('+dCnt+'건)</i></span>'
     +'<span class="pt-card"><b>이번 주</b> <strong>'+won(wSum)+'</strong> <i>('+wCnt+'건)</i></span>'
-    +'<span class="pt-card"><b>이번 달</b> <strong>'+won(mSum)+'</strong> <i>('+mCnt+'건)</i></span>';
+    +'<span class="pt-card"><b>이번 달</b> <strong>'+won(mSum)+'</strong> <i>('+mCnt+'건)</i></span>'
+    +'<span class="pt-card"><b>전체</b> <strong>'+won(aSum)+'</strong> <i>('+aCnt+'건)</i></span>'
+    +'<span class="pt-card pt-profit"><b>이번 달 순이익</b> <strong>'+won(Math.round(mSum*0.1))+'</strong></span>'
+    +'<span class="pt-card pt-profit"><b>전체 순이익</b> <strong>'+won(Math.round(aSum*0.1))+'</strong></span>';
 }
 
 function renderPager(pages){

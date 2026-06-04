@@ -7,7 +7,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="하랑이 아빠가 소개하는 산방산 농수산 고당도 제주감귤">
 <meta property="og:description" content="제주 산방산 자락 고당도 카라향! 택배비 무료, 산지 직송. 카라향 6/10 마감!">
-<meta property="og:image" content="https://shop.cellab.kr/img/karahyang.jpg?v=2">
+<meta property="og:image" content="https://shop.cellab.kr/img/karahyang.jpg?v=3">
 <meta property="og:image:width" content="900">
 <meta property="og:image:height" content="832">
 <meta property="og:url" content="https://shop.cellab.kr/">
@@ -228,7 +228,6 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
     <input class="big-input" type="text" id="inp-depositor" placeholder="입금하실 분 성함" oninput="validStep2()">
 
     <div class="agree-box">
-      <label class="agree-all"><input type="checkbox" id="agree-all" onchange="toggleAll(this)">전체 동의</label>
       <label class="agree-item">
         <input type="checkbox" id="agree-privacy" onchange="updateSubmit()">
         <span><span class="agree-tag agree-req">필수</span>개인정보 수집·이용 동의
@@ -236,8 +235,8 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
         <span class="req-note"> · 미동의 시 주문이 불가합니다.</span></span>
       </label>
       <label class="agree-item">
-        <input type="checkbox" id="agree-marketing" onchange="updateSubmit()">
-        <span><span class="agree-tag agree-opt">선택</span>맛난 귤이 나오면 소개해드려도 괜찮을까요? (선택)</span>
+        <input type="checkbox" id="agree-marketing">
+        <span><span class="agree-tag agree-opt">선택</span>고당도 여름 하우스귤 1kg 무료 증정 이벤트 참가 (수신동의)</span>
       </label>
     </div>
 
@@ -434,10 +433,8 @@ function copyAcct(){ var t=CONFIG.BANK_ACCT; if(navigator.clipboard&&navigator.c
 function fb(t){ var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("복사됨: "+t);}catch(e){toast("복사 실패");}document.body.removeChild(ta); }
 function toast(m){ var el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(function(){el.classList.remove("show");},1700); }
 
-function toggleAll(cb){ document.getElementById("agree-privacy").checked=cb.checked; document.getElementById("agree-marketing").checked=cb.checked; updateSubmit(); }
 function updateSubmit(){
-  var p=document.getElementById("agree-privacy").checked, m=document.getElementById("agree-marketing").checked;
-  document.getElementById("agree-all").checked=p&&m;
+  var p=document.getElementById("agree-privacy").checked;
   document.getElementById("submit-btn").disabled=!(p && document.getElementById("inp-depositor").value.trim() && allOk());
 }
 function openModal(id){ document.getElementById(id).classList.add("show"); }

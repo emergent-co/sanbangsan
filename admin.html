@@ -481,7 +481,7 @@ function buildSmsText(){
       +first+more;
   }).join("\n\n");
   var sum = picked.reduce(function(a,o){return a+Number(o.total_amount||0);},0);
-  var net = Math.round(sum/1.1);
+  var net = Math.round(sum*0.9);
   return body + "\n\n금번주문 "+picked.length+"건 입금 "+net.toLocaleString("ko-KR")+"원";
 }
 function smsSelected(){

@@ -116,6 +116,7 @@ tbody tr:hover{background:#fffaf2;}
   <button class="btn btn-ghost" onclick="selectAllFiltered()">검색결과 전체선택</button>
   <button class="btn btn-ghost" onclick="clearSel()">선택해제</button>
   <button class="btn btn-del" id="btn-del-sel" onclick="deleteSelected()" style="display:none;">선택 삭제</button>
+  <button class="btn btn-mkt" onclick="openExpenses()">지출내역</button>
   <span id="result-info"></span>
 </div>
 
@@ -135,6 +136,23 @@ tbody tr:hover{background:#fffaf2;}
     <div class="modal-foot">
       <button class="btn btn-dark" onclick="copyTextArea()">복사</button>
       <button class="btn btn-ghost" onclick="closeModal('m-text')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-expense">
+  <div class="modal-box" style="max-width:640px;">
+    <h3>지출내역</h3>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <input id="ex-content" type="text" placeholder="내용" style="flex:2;min-width:120px;padding:8px;border:1px solid #e0c9a0;border-radius:7px;font-size:13px;">
+      <input id="ex-date" type="date" style="flex:1;min-width:140px;padding:8px;border:1px solid #e0c9a0;border-radius:7px;font-size:13px;">
+      <input id="ex-amount" type="number" placeholder="비용" style="width:110px;padding:8px;border:1px solid #e0c9a0;border-radius:7px;font-size:13px;">
+      <input id="ex-note" type="text" placeholder="비고" style="flex:1;min-width:100px;padding:8px;border:1px solid #e0c9a0;border-radius:7px;font-size:13px;">
+      <button class="btn btn-dark" onclick="addExpense()">추가</button>
+    </div>
+    <div id="ex-list"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-expense')">닫기</button>
     </div>
   </div>
 </div>
@@ -225,7 +243,7 @@ function loadOrders(){
   document.getElementById("pager").innerHTML = "";
   adminFetch(CONFIG.API_BASE + "/orders?limit=500")
     .then(function(r){ if(r.status===401){ clearKey(); showGate("비밀번호가 올바르지 않습니다. 다시 입력해 주세요."); throw new Error("__gate__"); } return r.json(); })
-    .then(function(res){ if(!res.ok){ throw new Error(res.error || "조회 실패"); } allOrders = res.orders || []; updateCounts(); renderTable(); })
+    .then(function(res){ if(!res.ok){ throw new Error(res.error || "조회 실패"); } allOrders = res.orders || []; updateCounts(); renderTable(); loadExpenses(); })
     .catch(function(e){ if(e.message==="__gate__") return; document.getElementById("tablewrap").innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; });
 }
 
@@ -444,13 +462,17 @@ function renderPeriodTotals(){
     if(dt>=weekStart){ wSum+=amt; wCnt++; }
     if(dt.slice(0,7)===monStr){ mSum+=amt; mCnt++; }
   });
+  var exMonth=0, exTotal=0;
+  (window.__expenses||[]).forEach(function(e){ var a=Number(e.amount||0); exTotal+=a; if((e.spent_at||"").slice(0,7)===monStr) exMonth+=a; });
+  var monthProfit = Math.round(mSum*0.1) - exMonth;
+  var totalProfit = Math.round(aSum*0.1) - exTotal;
   el.innerHTML =
      '<span class="pt-card"><b>오늘</b> <strong>'+won(dSum)+'</strong> <i>('+dCnt+'건)</i></span>'
     +'<span class="pt-card"><b>이번 주</b> <strong>'+won(wSum)+'</strong> <i>('+wCnt+'건)</i></span>'
     +'<span class="pt-card"><b>이번 달</b> <strong>'+won(mSum)+'</strong> <i>('+mCnt+'건)</i></span>'
     +'<span class="pt-card"><b>전체</b> <strong>'+won(aSum)+'</strong> <i>('+aCnt+'건)</i></span>'
-    +'<span class="pt-card pt-profit"><b>이번 달 순이익</b> <strong>'+won(Math.round(mSum*0.1))+'</strong></span>'
-    +'<span class="pt-card pt-profit"><b>전체 순이익</b> <strong>'+won(Math.round(aSum*0.1))+'</strong></span>';
+    +'<span class="pt-card pt-profit"><b>이번 달 순이익</b> <strong>'+won(monthProfit)+'</strong> <i>(지출 '+won(exMonth)+')</i></span>'
+    +'<span class="pt-card pt-profit"><b>전체 순이익</b> <strong>'+won(totalProfit)+'</strong> <i>(지출 '+won(exTotal)+')</i></span>';
 }
 
 function renderPager(pages){
@@ -555,6 +577,58 @@ function extractMarketing(){
   allOrders.forEach(function(o){ if(o.agree_marketing==1 && !seen[o.phone]){ seen[o.phone]=1; lines.push(o.name+" "+o.phone); } });
   if(lines.length===0){ toast("마케팅 동의자가 없습니다."); return; }
   openTextModal("마케팅 수신 동의자 ("+lines.length+"명)", lines.join("\n"));
+}
+
+/* ===== 지출내역 ===== */
+function openExpenses(){
+  document.getElementById("m-expense").classList.add("show");
+  var dEl=document.getElementById("ex-date");
+  if(!dEl.value){ dEl.value = new Date(Date.now()+9*3600*1000).toISOString().slice(0,10); }
+  loadExpenses();
+}
+function loadExpenses(){
+  adminFetch(CONFIG.API_BASE + "/expenses")
+    .then(function(r){ return r.ok?r.json():{ok:false}; })
+    .then(function(res){ if(!res.ok) return; window.__expenses = res.expenses || []; renderExpenses(); renderPeriodTotals(); });
+}
+function renderExpenses(){
+  var el=document.getElementById("ex-list"); if(!el) return;
+  var list = window.__expenses || [];
+  if(list.length===0){ el.innerHTML='<div style="color:#9a7a50;padding:16px 0;text-align:center;">지출 내역이 없습니다.</div>'; return; }
+  var total = list.reduce(function(a,e){return a+Number(e.amount||0);},0);
+  var rows = list.map(function(e){
+    return '<tr>'
+      +'<td style="padding:6px 5px;border-bottom:1px solid #f0e8da;">'+esc(e.spent_at||"")+'</td>'
+      +'<td style="padding:6px 5px;border-bottom:1px solid #f0e8da;">'+esc(e.content||"")+'</td>'
+      +'<td style="padding:6px 5px;border-bottom:1px solid #f0e8da;text-align:right;color:#c0392b;font-weight:700;">'+won(e.amount)+'</td>'
+      +'<td style="padding:6px 5px;border-bottom:1px solid #f0e8da;color:#7a5a35;">'+esc(e.note||"")+'</td>'
+      +'<td style="padding:6px 5px;border-bottom:1px solid #f0e8da;"><button class="del" onclick="deleteExpense('+e.id+')">삭제</button></td>'
+      +'</tr>';
+  }).join("");
+  el.innerHTML = '<table style="width:100%;font-size:13px;border-collapse:collapse;">'
+    +'<thead><tr><th style="text-align:left;padding:6px 5px;border-bottom:2px solid #e8ddc8;">날짜</th><th style="text-align:left;padding:6px 5px;border-bottom:2px solid #e8ddc8;">내용</th><th style="text-align:right;padding:6px 5px;border-bottom:2px solid #e8ddc8;">비용</th><th style="text-align:left;padding:6px 5px;border-bottom:2px solid #e8ddc8;">비고</th><th style="border-bottom:2px solid #e8ddc8;"></th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div style="text-align:right;margin-top:10px;font-weight:800;color:#c0392b;">지출 합계: '+won(total)+'</div>';
+}
+function addExpense(){
+  var content=document.getElementById("ex-content").value.trim();
+  var spent_at=document.getElementById("ex-date").value;
+  var amount=parseInt(document.getElementById("ex-amount").value,10);
+  var note=document.getElementById("ex-note").value.trim();
+  if(!content){ toast("내용을 입력하세요."); return; }
+  if(!spent_at){ toast("날짜를 선택하세요."); return; }
+  if(!(amount>=0)){ toast("비용을 입력하세요."); return; }
+  adminFetch(CONFIG.API_BASE + "/expenses", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({content:content,spent_at:spent_at,amount:amount,note:note}) })
+    .then(function(r){return r.json();}).then(function(res){
+      if(res.ok){ toast("추가됨"); document.getElementById("ex-content").value=""; document.getElementById("ex-amount").value=""; document.getElementById("ex-note").value=""; loadExpenses(); }
+      else toast(res.error||"추가 실패");
+    }).catch(function(){ toast("네트워크 오류"); });
+}
+function deleteExpense(id){
+  if(!confirm("이 지출을 삭제할까요?")) return;
+  adminFetch(CONFIG.API_BASE + "/expenses/" + id, { method:"DELETE" })
+    .then(function(r){return r.json();}).then(function(res){ if(res.ok){ toast("삭제됨"); loadExpenses(); } else toast(res.error||"삭제 실패"); })
+    .catch(function(){ toast("네트워크 오류"); });
 }
 
 function openTextModal(title, text){ document.getElementById("m-text-title").textContent=title; document.getElementById("m-text-area").value=text; document.getElementById("m-text").classList.add("show"); }

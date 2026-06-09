@@ -5,7 +5,7 @@ import { json, badRequest, requireAdmin, verifyTurnstile } from "./_shared.js";
 const PRICES = {
   A: { name: "카라향 정품 소과", opts: { "3kg": 35000, "5kg": 49000 } },
   B: { name: "못난이 카라향",     opts: { "3kg": 25000, "5kg": 38000, "10kg": 58000 } },
-  C: { name: "제주 애플망고 3kg", opts: { "5~6과": 145000, "7~8과": 130000, "9~11과": 120000, "12~14과": 110000 } },
+  C: { name: "제주 애플망고 3kg", opts: { "5~6개입": 145000, "7~8개입": 130000, "9~11개입": 120000, "12~14개입": 110000 } },
   D: { name: "미니 애플망고 3kg", opts: { "3kg": 90000 } },
 };
 

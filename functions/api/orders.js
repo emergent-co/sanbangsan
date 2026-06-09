@@ -3,10 +3,11 @@ import { json, badRequest, requireAdmin, verifyTurnstile } from "./_shared.js";
 
 // 서버측 가격표(원). 클라이언트가 보낸 금액을 믿지 않고 여기서 재계산한다.
 const PRICES = {
-  A: { name: "카라향 정품 소과", "3kg": 35000, "5kg": 49000, "10kg": 79000 },
-  B: { name: "못난이 카라향",     "3kg": 25000, "5kg": 38000, "10kg": 58000 },
+  A: { name: "카라향 정품 소과", opts: { "3kg": 35000, "5kg": 49000 } },
+  B: { name: "못난이 카라향",     opts: { "3kg": 25000, "5kg": 38000, "10kg": 58000 } },
+  C: { name: "제주 애플망고 3kg", opts: { "5~6과": 145000, "7~8과": 130000, "9~11과": 120000, "12~14과": 110000 } },
+  D: { name: "미니 애플망고 3kg", opts: { "3kg": 90000 } },
 };
-const VALID_WEIGHTS = ["3kg", "5kg", "10kg"];
 
 // --- POST /api/orders : 주문 생성(공개) ---
 export async function onRequestPost({ request, env }) {
@@ -57,12 +58,13 @@ export async function onRequestPost({ request, env }) {
       const g = String(it.group || "").toUpperCase();
       const w = String(it.weight || "");
       const qty = parseInt(it.qty, 10);
-      if (!PRICES[g] || !VALID_WEIGHTS.includes(w) || !(qty > 0) || qty > 999) {
+      const prod = PRICES[g];
+      if (!prod || !prod.opts[w] || !(qty > 0) || qty > 999) {
         return badRequest("주문 품목 정보가 올바르지 않습니다.");
       }
-      const unit = PRICES[g][w];
+      const unit = prod.opts[w];
       total += unit * qty;
-      clean.push({ group: g, name: PRICES[g].name, weight: w, qty, unit });
+      clean.push({ group: g, name: prod.name, weight: w, qty, unit });
     }
     const name = (sh.name || "").trim();
     const phone = (sh.phone || "").trim();

@@ -332,7 +332,7 @@ function grandTotal(){ return dests.reduce(function(s,d){return s+destTotal(d);}
 function renderDests(){
   var box=document.getElementById("dests");
   box.innerHTML=dests.map(function(d,di){
-    var prods=["A","B"].map(function(g){
+    var prods=["A"].map(function(g){
       var btns=WEIGHTS.map(function(w){
         return '<button class="w-btn" id="wb-'+di+'-'+g+'-'+w+'" onclick="addItem('+di+',\''+g+'\',\''+w+'\')">'
           +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g][w])+'</span><span class="w-add">담기</span></button>';

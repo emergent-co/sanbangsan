@@ -107,7 +107,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 .dp-block{margin-top:6px;}
 .dp-name{font-size:13px;font-weight:800;color:#2d1a00;margin:8px 0 6px;}
 .dp-item{margin-top:16px;}
-.dp-img{width:100%;height:200px;object-fit:cover;border-radius:12px;background:#fff6ec;display:block;margin-bottom:8px;filter:saturate(.9) contrast(.98);}
+.dp-img{width:100%;height:250px;object-fit:cover;border-radius:12px;background:#fff6ec;display:block;margin-bottom:8px;filter:saturate(.9) contrast(.98);}
 .dp-item[data-g="A"] .dp-img{object-position:center 40%;}
 .dp-item[data-g="B"] .dp-img{object-position:center 70%;}
 .dp-desc{font-size:12px;color:#7a5a35;line-height:1.5;margin:0 0 10px;}
@@ -193,7 +193,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 <div class="hero">
   <div class="brand-badge">제주 직송</div>
   <h1><span class="small">하랑이 아빠가 소개하는</span>산방산 농수산<br>고당도 제주감귤</h1>
-  <p>산방산 자락에서 아버지가 키운 카라향이에요.<br>맛있게 드시라고 산지에서 바로 보냅니다.</p>
+  <p>맛있게 드시라고 산지에서 바로 보냅니다.</p>
 </div>
 
 <div class="wizard">
@@ -274,7 +274,7 @@ body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; backgroun
 </div>
 
 <div class="footer">
-  <div style="font-size:13px;color:#fff;font-weight:700;">산방산 농수산</div>
+  <div style="font-size:13px;color:#fff;font-weight:700;">셀렙 <span style="font-weight:400;font-size:11px;color:#c8a878;">(산방산 농수산 온라인 판매대행)</span></div>
   <div style="margin-top:8px;"><a class="policy" href="privacy.html" target="_blank">개인정보 처리방침</a></div>
   <div style="margin-top:10px;color:#f0c98a;">입금계좌: 하나은행 <b>115-910946-09507</b> (이영현)</div>
   <div class="biz">
@@ -324,7 +324,7 @@ var PDESC={
   C:"제주 한경면 청수리 황토밭에서 키운 애플망고예요. 새벽에 따서 그날 보냅니다. 당도는 보통 15브릭쯤 나옵니다.",
   D:"한 입에 먹기 좋은 작은 애플망고예요. 단맛은 큰 것과 비슷합니다."
 };
-var PIMG={A:"img/karahyang.jpg",B:"img/ugly.jpg",C:"img/mango.jpg",D:"img/mango.jpg"};
+var PIMG={A:"img/karahyang.jpg",B:"img/ugly.jpg",C:"img/mango.jpg",D:""};
 var turnstileToken="";
 
 function blankDest(){ return {name:"",phone:"",zip:"",addr:"",detail:"",req:"",items:[]}; }
@@ -344,8 +344,9 @@ function renderDests(){
         return '<button class="w-btn" id="wb-'+di+'-'+g+'-'+w+'" onclick="addItem('+di+',\''+g+'\',\''+w+'\')">'
           +'<span class="w-kg">'+w+'</span><span class="w-price">'+won(PRICES[g].opts[w])+'</span><span class="w-add">담기</span></button>';
       }).join("");
+      var imgTag = PIMG[g] ? '<img class="dp-img" alt="'+PRICES[g].name+'" src="'+PIMG[g]+'" onerror="this.style.display=\'none\'">' : '';
       return '<div class="dp-item" data-g="'+g+'">'
-        +'<img class="dp-img" alt="'+PRICES[g].name+'" src="'+PIMG[g]+'" onerror="this.style.display=\'none\'">'
+        +imgTag
         +'<div class="dp-name">'+PRICES[g].name+'</div>'
         +'<div class="dp-desc">'+PDESC[g]+'</div>'
         +'<div class="w-btns">'+btns+'</div></div>';
